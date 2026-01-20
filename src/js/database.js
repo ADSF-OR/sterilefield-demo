@@ -1,24 +1,36 @@
 /**
- * SterileField Database Module
+ * SterileField Database Module (MVP)
  * Handles all Supabase database operations
  */
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-import { SUPABASE_CONFIG, validateConfig, CASE_STATUS } from './config.js';
 
 // Initialize Supabase client
 let supabase = null;
 
 export function initSupabase() {
-    if (!validateConfig()) {
-        throw new Error('Invalid Supabase configuration');
+    const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env?.VITE_SUPABASE_ANON_KEY;
+
+    // Check for missing environment variables
+    if (!supabaseUrl || !supabaseKey) {
+        console.error('❌ Missing Supabase configuration!');
+        console.error('Required environment variables:');
+        console.error('  - VITE_SUPABASE_URL');
+        console.error('  - VITE_SUPABASE_ANON_KEY');
+        throw new Error('Missing Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment variables.');
     }
 
-    supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, {
+    // Check for placeholder values
+    if (supabaseUrl.includes('your-project-id')) {
+        console.error('❌ Supabase URL is still a placeholder!');
+        throw new Error('Please replace VITE_SUPABASE_URL with your actual Supabase project URL.');
+    }
+
+    supabase = createClient(supabaseUrl, supabaseKey, {
         auth: {
-            autoRefreshToken: true,
-            persistSession: true,
-            detectSessionUrl: true
+            autoRefreshToken: false,
+            persistSession: false
         }
     });
 
@@ -34,75 +46,6 @@ export function getSupabase() {
 }
 
 // =====================================================
-// AUTHENTICATION
-// =====================================================
-
-export async function getCurrentUser() {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) throw error;
-    return user;
-}
-
-export async function getUserProfile(userId) {
-    const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-    if (error) throw error;
-    return data;
-}
-
-// =====================================================
-// SURGEONS
-// =====================================================
-
-export async function getSurgeons() {
-    const { data, error } = await supabase
-        .from('surgeons')
-        .select(`
-            *,
-            primary_hospital:hospitals(*)
-        `)
-        .eq('is_active', true)
-        .order('name');
-
-    if (error) throw error;
-    return data;
-}
-
-export async function getSurgeon(surgeonId) {
-    const { data, error } = await supabase
-        .from('surgeons')
-        .select(`
-            *,
-            primary_hospital:hospitals(*)
-        `)
-        .eq('id', surgeonId)
-        .single();
-
-    if (error) throw error;
-    return data;
-}
-
-export async function updateSurgeonPreferences(surgeonId, preferences) {
-    const { data, error } = await supabase
-        .from('surgeons')
-        .update({
-            pref_general: preferences.general,
-            pref_implants: preferences.implants,
-            pref_technique: preferences.technique
-        })
-        .eq('id', surgeonId)
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data;
-}
-
-// =====================================================
 // HOSPITALS
 // =====================================================
 
@@ -113,18 +56,107 @@ export async function getHospitals() {
         .order('name');
 
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
-export async function getHospital(hospitalId) {
+export async function getHospital(id) {
     const { data, error } = await supabase
         .from('hospitals')
         .select('*')
-        .eq('id', hospitalId)
+        .eq('id', id)
         .single();
 
     if (error) throw error;
     return data;
+}
+
+export async function createHospital(name) {
+    const { data, error } = await supabase
+        .from('hospitals')
+        .insert([{ name: name.trim() }])
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function updateHospital(id, name) {
+    const { data, error } = await supabase
+        .from('hospitals')
+        .update({ name: name.trim() })
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function deleteHospital(id) {
+    const { error } = await supabase
+        .from('hospitals')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
+}
+
+// =====================================================
+// SURGEONS
+// =====================================================
+
+export async function getSurgeons() {
+    const { data, error } = await supabase
+        .from('surgeons')
+        .select('*')
+        .order('name');
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function getSurgeon(id) {
+    const { data, error } = await supabase
+        .from('surgeons')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function createSurgeon(name) {
+    const { data, error } = await supabase
+        .from('surgeons')
+        .insert([{ name: name.trim() }])
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function updateSurgeon(id, name) {
+    const { data, error } = await supabase
+        .from('surgeons')
+        .update({ name: name.trim() })
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function deleteSurgeon(id) {
+    const { error } = await supabase
+        .from('surgeons')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
 }
 
 // =====================================================
@@ -133,53 +165,52 @@ export async function getHospital(hospitalId) {
 
 export async function getCases(filters = {}) {
     let query = supabase
-        .from('cases_detailed')
-        .select('*');
+        .from('cases')
+        .select(`
+            *,
+            hospital:hospitals(id, name),
+            surgeon:surgeons(id, name)
+        `);
 
     // Apply filters
-    if (filters.repId) {
-        query = query.eq('assigned_rep_id', filters.repId);
-    }
-
     if (filters.surgeonId) {
         query = query.eq('surgeon_id', filters.surgeonId);
+    }
+
+    if (filters.hospitalId) {
+        query = query.eq('hospital_id', filters.hospitalId);
     }
 
     if (filters.status) {
         query = query.eq('status', filters.status);
     }
 
-    if (filters.confirmed !== undefined) {
-        query = query.eq('confirmed', filters.confirmed);
-    }
-
-    if (filters.date) {
-        query = query.eq('scheduled_date', filters.date);
-    }
-
     if (filters.dateFrom) {
-        query = query.gte('scheduled_date', filters.dateFrom);
+        query = query.gte('case_datetime', filters.dateFrom);
     }
 
     if (filters.dateTo) {
-        query = query.lte('scheduled_date', filters.dateTo);
+        query = query.lte('case_datetime', filters.dateTo);
     }
 
-    // Default ordering
-    query = query.order('scheduled_date', { ascending: true })
-                 .order('scheduled_time', { ascending: true });
+    // Default ordering by date/time
+    query = query.order('case_datetime', { ascending: true });
 
     const { data, error } = await query;
 
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
-export async function getCase(caseId) {
+export async function getCase(id) {
     const { data, error } = await supabase
-        .from('cases_detailed')
-        .select('*')
-        .eq('id', caseId)
+        .from('cases')
+        .select(`
+            *,
+            hospital:hospitals(id, name),
+            surgeon:surgeons(id, name)
+        `)
+        .eq('id', id)
         .single();
 
     if (error) throw error;
@@ -187,133 +218,50 @@ export async function getCase(caseId) {
 }
 
 export async function createCase(caseData) {
-    // Generate case code
-    const { data: caseCode } = await supabase.rpc('generate_case_code');
-
     const { data, error } = await supabase
         .from('cases')
         .insert([{
-            case_code: caseCode,
-            surgeon_id: caseData.surgeonId,
-            hospital_id: caseData.hospitalId,
-            assigned_rep_id: caseData.assignedRepId,
+            case_datetime: caseData.case_datetime,
             procedure: caseData.procedure,
-            room: caseData.room,
-            scheduled_date: caseData.scheduledDate,
-            scheduled_time: caseData.scheduledTime,
-            notes: caseData.notes,
-            created_by_id: caseData.createdById
+            hospital_id: caseData.hospital_id,
+            surgeon_id: caseData.surgeon_id,
+            notes: caseData.notes || null,
+            status: caseData.status || 'scheduled'
         }])
-        .select()
+        .select(`
+            *,
+            hospital:hospitals(id, name),
+            surgeon:surgeons(id, name)
+        `)
         .single();
 
     if (error) throw error;
     return data;
 }
 
-export async function updateCase(caseId, updates) {
+export async function updateCase(id, updates) {
     const { data, error } = await supabase
         .from('cases')
         .update(updates)
-        .eq('id', caseId)
-        .select()
+        .eq('id', id)
+        .select(`
+            *,
+            hospital:hospitals(id, name),
+            surgeon:surgeons(id, name)
+        `)
         .single();
 
     if (error) throw error;
     return data;
 }
 
-export async function deleteCase(caseId) {
+export async function deleteCase(id) {
     const { error } = await supabase
         .from('cases')
         .delete()
-        .eq('id', caseId);
+        .eq('id', id);
 
     if (error) throw error;
-}
-
-export async function confirmCase(caseId, userId, userName) {
-    const { data, error } = await supabase
-        .from('cases')
-        .update({
-            confirmed: true,
-            confirmed_by_id: userId,
-            confirmed_at: new Date().toISOString()
-        })
-        .eq('id', caseId)
-        .select()
-        .single();
-
-    if (error) throw error;
-    return data;
-}
-
-export async function updateCaseTime(caseId, timeType, timestamp) {
-    const updates = {};
-
-    if (timeType === 'in') {
-        updates.time_in = timestamp;
-    } else if (timeType === 'out') {
-        updates.time_out = timestamp;
-    }
-
-    return updateCase(caseId, updates);
-}
-
-export async function getUnconfirmedCount(repId) {
-    const { count, error } = await supabase
-        .from('cases')
-        .select('*', { count: 'exact', head: true })
-        .eq('assigned_rep_id', repId)
-        .eq('confirmed', false)
-        .eq('status', CASE_STATUS.SCHEDULED)
-        .gte('scheduled_date', new Date().toISOString().split('T')[0]);
-
-    if (error) throw error;
-    return count;
-}
-
-// =====================================================
-// USERS / REPS
-// =====================================================
-
-export async function getReps() {
-    const { data, error } = await supabase
-        .from('users')
-        .select('id, full_name, email, territory')
-        .eq('role', 'rep')
-        .eq('is_active', true)
-        .order('full_name');
-
-    if (error) throw error;
-    return data;
-}
-
-// =====================================================
-// REALTIME SUBSCRIPTIONS
-// =====================================================
-
-export function subscribeToCases(callback) {
-    const channel = supabase
-        .channel('cases_changes')
-        .on(
-            'postgres_changes',
-            {
-                event: '*',
-                schema: 'public',
-                table: 'cases'
-            },
-            callback
-        )
-        .subscribe();
-
-    return channel;
-}
-
-export function unsubscribe(channel) {
-    if (channel) {
-        supabase.removeChannel(channel);
-    }
 }
 
 // =====================================================
@@ -327,14 +275,51 @@ export function handleDatabaseError(error) {
     if (error.code === 'PGRST116') {
         return 'Record not found';
     } else if (error.code === '23505') {
-        return 'A record with this information already exists';
+        return 'A record with this name already exists';
     } else if (error.code === '23503') {
-        return 'Cannot delete this record as it is referenced by other records';
-    } else if (error.message.includes('JWT')) {
-        return 'Session expired. Please log in again.';
-    } else if (error.message.includes('permission')) {
-        return 'You do not have permission to perform this action';
+        return 'Cannot delete this record because it is referenced by cases';
+    } else if (error.message && error.message.includes('duplicate key')) {
+        return 'A record with this name already exists';
     }
 
     return error.message || 'An unexpected error occurred';
+}
+
+// Get upcoming cases (next 7 days by default)
+export async function getUpcomingCases(days = 7) {
+    const now = new Date();
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + days);
+
+    return getCases({
+        dateFrom: now.toISOString(),
+        dateTo: futureDate.toISOString()
+    });
+}
+
+// Get statistics for dashboard
+export async function getDashboardStats() {
+    try {
+        const [allCases, upcomingCases] = await Promise.all([
+            getCases({ status: 'scheduled' }),
+            getUpcomingCases(7)
+        ]);
+
+        return {
+            totalScheduled: allCases.length,
+            upcoming7Days: upcomingCases.length,
+            todayCount: upcomingCases.filter(c => {
+                const caseDate = new Date(c.case_datetime);
+                const today = new Date();
+                return caseDate.toDateString() === today.toDateString();
+            }).length
+        };
+    } catch (error) {
+        console.error('Error getting dashboard stats:', error);
+        return {
+            totalScheduled: 0,
+            upcoming7Days: 0,
+            todayCount: 0
+        };
+    }
 }

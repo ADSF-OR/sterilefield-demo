@@ -1,18 +1,18 @@
 /**
- * SterileField Application Main Module (Refactored with Routing)
- * Handles UI logic and integrates with Supabase database
+ * SterileField MVP Application
+ * Simple case tracking without authentication
  */
 
-// Import modules
 import { initSupabase } from './database.js';
-import { isAuthenticated, initAuth, signOut, getCurrentUserProfile } from './auth.js';
-import { defineRoute, navigateTo, setAuthCheck, showPage, hideAllPages, showHeader, showBottomNav, setActiveNav } from './router.js';
+import { defineRoute, navigateTo, showPage, hideAllPages } from './router.js';
 
 // Import pages
-import { renderLoginPage } from '../pages/login.js';
-import { renderCaseListPage } from '../pages/caseList.js';
-import { renderCaseDetailPage } from '../pages/caseDetail.js';
+import { renderHomePage } from '../pages/home.js';
+import { renderSchedulePage } from '../pages/schedule.js';
 import { renderCaseFormPage } from '../pages/caseForm.js';
+import { renderCaseDetailPage } from '../pages/caseDetail.js';
+import { renderHospitalsPage } from '../pages/hospitals.js';
+import { renderSurgeonsPage } from '../pages/surgeons.js';
 
 // =====================================================
 // INITIALIZATION
@@ -20,38 +20,26 @@ import { renderCaseFormPage } from '../pages/caseForm.js';
 
 export async function initApp() {
     try {
-        console.log('🚀 Initializing SterileField application...');
+        console.log('🚀 Initializing SterileField MVP...');
 
         // Initialize Supabase
         initSupabase();
 
-        // Set up authentication check for router
-        setAuthCheck(async () => {
-            return isAuthenticated();
-        });
-
         // Define all routes
         defineRoutes();
-
-        // Initialize auth and check session
-        const hasSession = await initAuth();
 
         console.log('✅ Application initialized successfully');
 
         // Navigate to initial route
         const path = window.location.pathname;
         if (path === '/' || path === '') {
-            if (hasSession) {
-                await navigateTo('/cases', true);
-            } else {
-                await navigateTo('/login', true);
-            }
+            await navigateTo('/', true);
         } else {
             await navigateTo(path, true);
         }
     } catch (error) {
         console.error('❌ Failed to initialize application:', error);
-        showError('Failed to initialize application. Please refresh the page.');
+        showConfigError(error.message);
     }
 }
 
@@ -60,81 +48,89 @@ export async function initApp() {
 // =====================================================
 
 function defineRoutes() {
-    // Public routes
-    defineRoute('/login', async () => {
+    // Home dashboard
+    defineRoute('/', async () => {
         hideAllPages();
-        showHeader(false);
-        showBottomNav(false);
-        showPage('loginPage');
-        await renderLoginPage();
+        showPage('homePage');
+        await renderHomePage();
     }, { requiresAuth: false });
 
-    // Protected routes
-    defineRoute('/', async () => {
-        await navigateTo('/cases', true);
-    });
-
-    defineRoute('/cases', async () => {
+    // Schedule list
+    defineRoute('/schedule', async () => {
         hideAllPages();
-        showHeader(true);
-        showBottomNav(true);
-        setActiveNav('navCases');
-        showPage('caseListPage');
-        await renderCaseListPage();
-    });
+        showPage('schedulePage');
+        await renderSchedulePage();
+    }, { requiresAuth: false });
 
+    // New case form
     defineRoute('/cases/new', async () => {
         hideAllPages();
-        showHeader(true);
-        showBottomNav(false);
         showPage('caseFormPage');
         await renderCaseFormPage();
-    });
+    }, { requiresAuth: false });
 
-    // Dynamic routes with params
-    defineRoute('/cases/:id/edit', async (params) => {
-        hideAllPages();
-        showHeader(true);
-        showBottomNav(false);
-        showPage('caseFormPage');
-        await renderCaseFormPage(params.id);
-    });
-
+    // Case detail and edit
     defineRoute('/cases/:id', async (params) => {
         hideAllPages();
-        showHeader(true);
-        showBottomNav(false);
         showPage('caseDetailPage');
         await renderCaseDetailPage(params.id);
-    });
+    }, { requiresAuth: false });
+
+    // Hospitals management
+    defineRoute('/hospitals', async () => {
+        hideAllPages();
+        showPage('hospitalsPage');
+        await renderHospitalsPage();
+    }, { requiresAuth: false });
+
+    // Surgeons management
+    defineRoute('/surgeons', async () => {
+        hideAllPages();
+        showPage('surgeonsPage');
+        await renderSurgeonsPage();
+    }, { requiresAuth: false });
 }
 
 // =====================================================
-// UTILITY FUNCTIONS
+// ERROR HANDLING
 // =====================================================
 
-function showError(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #fee;
-        border: 1px solid #fcc;
-        color: #c33;
-        padding: 16px 24px;
-        border-radius: 8px;
-        font-size: 14px;
-        z-index: 10000;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    `;
-    errorDiv.textContent = message;
-    document.body.appendChild(errorDiv);
+function showConfigError(message) {
+    document.body.innerHTML = `
+        <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #fee 0%, #fdd 100%); padding: 20px; font-family: system-ui, -apple-system, sans-serif;">
+            <div style="background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 600px; border: 2px solid #c33;">
+                <div style="font-size: 64px; text-align: center; margin-bottom: 20px;">⚠️</div>
+                <h1 style="font-size: 24px; color: #c33; margin-bottom: 16px; text-align: center;">Configuration Error</h1>
+                <p style="color: #666; margin-bottom: 24px; line-height: 1.6;">${message}</p>
 
-    setTimeout(() => {
-        errorDiv.remove();
-    }, 5000);
+                <div style="background: #f9f9f9; border-left: 4px solid #c33; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                    <div style="font-weight: 600; margin-bottom: 12px; color: #333;">Required Environment Variables:</div>
+                    <code style="display: block; background: #fff; padding: 12px; border-radius: 4px; font-size: 13px; line-height: 1.8;">
+                        VITE_SUPABASE_URL=https://your-project-id.supabase.co<br>
+                        VITE_SUPABASE_ANON_KEY=your-anon-key-here
+                    </code>
+                </div>
+
+                <div style="background: #e7f3ff; border-left: 4px solid #0066cc; padding: 16px; border-radius: 8px;">
+                    <div style="font-weight: 600; margin-bottom: 8px; color: #0066cc;">For Local Development:</div>
+                    <ol style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
+                        <li>Create a <code>.env.local</code> file in the project root</li>
+                        <li>Add your Supabase credentials</li>
+                        <li>Restart the dev server</li>
+                    </ol>
+                </div>
+
+                <div style="background: #f0f9ff; border-left: 4px solid #0891b2; padding: 16px; border-radius: 8px; margin-top: 16px;">
+                    <div style="font-weight: 600; margin-bottom: 8px; color: #0891b2;">For Vercel Deployment:</div>
+                    <ol style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
+                        <li>Go to Project Settings → Environment Variables</li>
+                        <li>Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY</li>
+                        <li>Redeploy your application</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 // =====================================================
@@ -143,40 +139,3 @@ function showError(message) {
 
 // Make navigation function available globally
 window.navigateTo = navigateTo;
-
-// Sign out handler
-window.handleSignOut = async () => {
-    try {
-        await signOut();
-    } catch (error) {
-        console.error('Sign out error:', error);
-    }
-};
-
-// Update header with sign out button
-document.addEventListener('DOMContentLoaded', () => {
-    const header = document.querySelector('.header');
-    if (header) {
-        // Add sign out button to header
-        const switchBtn = header.querySelector('.switch-btn');
-        if (switchBtn) {
-            switchBtn.textContent = 'Sign Out';
-            switchBtn.onclick = window.handleSignOut;
-        }
-    }
-
-    // Update bottom nav to use navigateTo
-    const navButtons = {
-        navSurgeons: '/cases',
-        navCases: '/cases',
-        navTerritory: '/cases',
-        navMore: '/cases'
-    };
-
-    Object.entries(navButtons).forEach(([id, path]) => {
-        const btn = document.getElementById(id);
-        if (btn) {
-            btn.onclick = () => navigateTo(path);
-        }
-    });
-});
