@@ -4,9 +4,9 @@
   "description": "Medical device case tracking for seamless coordination between reps and schedulers",
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
-    "build": "echo 'Static site - no build needed'",
-    "preview": "python3 -m http.server 8000 --directory public",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "deploy": "vercel --prod"
   },
   "keywords": [
@@ -22,6 +22,7 @@
     "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {
+    "vite": "^5.0.0",
     "vercel": "^33.0.1"
   },
   "engines": {
