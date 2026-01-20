@@ -1,0 +1,2252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SterileField - Medical Device Case Tracking</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --cream: #faf8f3;
+            --forest: #1a4d2e;
+            --forest-light: #2d6b45;
+            --gold: #b8860b;
+            --gold-light: #d4a942;
+            --slate: #1f2937;
+            --gray-light: #6b7280;
+            --gray-lighter: #9ca3af;
+            --gray-bg: #e5e7eb;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--cream) 0%, #f0ede3 100%);
+            color: var(--slate);
+            padding-bottom: 80px;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--forest) 0%, var(--forest-light) 100%);
+            border-bottom: 3px solid var(--gold);
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(26, 77, 46, 0.2);
+        }
+        
+        .header-title { 
+            font-family: Georgia, serif; 
+            font-size: 22px; 
+            color: white;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+        
+        .header-subtitle { 
+            font-size: 12px; 
+            color: var(--gold-light); 
+            margin-top: 4px; 
+        }
+        
+        .view-badge {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .view-badge-rep {
+            background: rgba(59, 130, 246, 0.2);
+            color: #1d4ed8;
+            border: 2px solid #3b82f6;
+        }
+        
+        .view-badge-scheduler {
+            background: rgba(249, 115, 22, 0.2);
+            color: #c2410c;
+            border: 2px solid #f97316;
+        }
+        
+        .switch-btn {
+            background: var(--gold);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(184, 134, 11, 0.3);
+        }
+        
+        .switch-btn:hover {
+            background: var(--gold-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(184, 134, 11, 0.4);
+        }
+        
+        .content { padding: 24px; max-width: 1200px; margin: 0 auto; }
+        
+        .welcome-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 77, 46, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 16px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .welcome-box {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: scaleIn 0.4s ease-out;
+            border-top: 4px solid var(--gold);
+        }
+        
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .welcome-title {
+            font-family: Georgia, serif;
+            font-size: 32px;
+            color: var(--forest);
+            margin-bottom: 12px;
+            font-weight: 400;
+        }
+        
+        .welcome-text { 
+            color: var(--gray-light); 
+            margin-bottom: 32px; 
+            line-height: 1.6; 
+            font-size: 15px;
+        }
+        
+        .role-btn {
+            width: 100%;
+            text-align: left;
+            padding: 20px;
+            border-radius: 12px;
+            background: white;
+            border: 2px solid var(--gray-bg);
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .role-btn:hover { 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); 
+            transform: translateY(-2px);
+            border-color: var(--forest-light);
+        }
+        
+        .role-btn.primary { 
+            border-color: var(--gold); 
+            background: linear-gradient(135deg, #fffbf0 0%, white 100%);
+        }
+        
+        .role-btn.primary:hover {
+            box-shadow: 0 8px 20px rgba(184, 134, 11, 0.2);
+        }
+        
+        .role-title { 
+            font-weight: 600; 
+            color: var(--forest); 
+            margin-bottom: 6px; 
+            font-size: 18px;
+        }
+        
+        .role-desc { font-size: 14px; color: var(--gray-light); }
+        
+        .page-title {
+            font-family: Georgia, serif;
+            font-size: 36px;
+            color: var(--forest);
+            font-weight: 400;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .page-subtitle { 
+            color: var(--gray-light); 
+            margin-bottom: 32px; 
+            font-size: 15px;
+        }
+        
+        .surgeon-card {
+            background: white;
+            border: 2px solid var(--gray-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            position: relative;
+        }
+        
+        .surgeon-card:hover { 
+            box-shadow: 0 8px 24px rgba(26, 77, 46, 0.12); 
+            transform: translateY(-2px);
+            border-color: var(--forest-light);
+        }
+        
+        .surgeon-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+        
+        .surgeon-name { 
+            font-weight: 600; 
+            color: var(--forest); 
+            font-size: 19px; 
+        }
+        
+        .pending-badge {
+            background: var(--gold);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        
+        .pending-badge.none {
+            background: var(--gray-bg);
+            color: var(--gray-light);
+        }
+        
+        .surgeon-specialty { font-size: 14px; color: var(--gray-light); margin-bottom: 6px; }
+        .surgeon-hospital { font-size: 13px; color: var(--gray-lighter); margin-bottom: 12px; }
+        
+        .surgeon-stats {
+            display: flex;
+            gap: 20px;
+            padding-top: 12px;
+            border-top: 2px solid var(--gray-bg);
+            font-size: 13px;
+            color: var(--gray-light);
+        }
+        
+        .hospital-card {
+            background: white;
+            border: 2px solid var(--gray-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        
+        .hospital-card:hover {
+            box-shadow: 0 8px 24px rgba(26, 77, 46, 0.12);
+            border-color: var(--forest-light);
+        }
+        
+        .case-card {
+            background: white;
+            border: 2px solid var(--gray-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        
+        .case-card:hover { 
+            box-shadow: 0 8px 24px rgba(26, 77, 46, 0.12); 
+            transform: translateY(-2px);
+            border-color: var(--forest-light);
+        }
+        
+        .case-card.assigned { 
+            border-color: var(--gold); 
+            background: linear-gradient(135deg, #fffbf0 0%, white 100%);
+        }
+        
+        .case-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+        
+        .case-id { 
+            font-weight: 700; 
+            color: var(--forest); 
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.5px;
+        }
+        
+        .badge {
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-left: 8px;
+        }
+        
+        .badge-gold { background: var(--gold); color: white; }
+        .badge-green { background: var(--success); color: white; }
+        .badge-gray { background: var(--gray-bg); color: var(--slate); }
+        .badge-blue { background: var(--info); color: white; }
+        .badge-danger { background: var(--danger); color: white; }
+        .badge-orange { background: #f97316; color: white; }
+        .badge-pending { background: rgba(249, 115, 22, 0.15); color: #c2410c; border: 1px solid #f97316; }
+        
+        .case-title { font-weight: 600; margin-bottom: 6px; font-size: 17px; color: var(--slate); }
+        .case-surgeon { font-size: 14px; color: var(--gray-light); margin-bottom: 10px; font-weight: 500; }
+        .case-location { font-size: 14px; color: var(--gray-light); margin-bottom: 12px; }
+        
+        .case-times {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: rgba(26, 77, 46, 0.04);
+            border-radius: 8px;
+        }
+        
+        .time-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .time-label {
+            font-size: 11px;
+            color: var(--gold);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .time-value {
+            font-size: 15px;
+            color: var(--slate);
+            font-weight: 600;
+        }
+        
+        .time-value.empty {
+            color: var(--gray-lighter);
+            font-style: italic;
+        }
+        
+        .time-value.delayed {
+            color: var(--danger);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, var(--forest) 0%, var(--forest-light) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(26, 77, 46, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26, 77, 46, 0.4);
+        }
+        
+        .btn-secondary { 
+            background: var(--gray-bg); 
+            color: var(--slate);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gray-light);
+            color: white;
+        }
+        
+        .btn-gold {
+            background: var(--gold);
+            color: white;
+        }
+        
+        .btn-gold:hover {
+            background: var(--gold-light);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+        
+        .btn-full { width: 100%; }
+        
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 77, 46, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 16px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: scaleIn 0.4s ease-out;
+            border-top: 4px solid var(--gold);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 24px;
+        }
+        
+        .modal-title {
+            font-family: Georgia, serif;
+            font-size: 28px;
+            color: var(--forest);
+            font-weight: 400;
+        }
+        
+        .modal-close {
+            background: var(--gray-bg);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--gray-light);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .form-group { margin-bottom: 20px; }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--slate);
+            margin-bottom: 8px;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--gray-bg);
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--forest-light);
+            box-shadow: 0 0 0 3px rgba(26, 77, 46, 0.1);
+        }
+        
+        .form-textarea { resize: vertical; min-height: 120px; }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .pref-section {
+            background: rgba(184, 134, 11, 0.08);
+            border: 2px solid rgba(184, 134, 11, 0.25);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .pref-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .pref-text {
+            font-size: 14px;
+            color: var(--slate);
+            line-height: 1.6;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 3px solid var(--gold);
+            display: flex;
+            justify-around: space-around;
+            padding: 12px 0;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .nav-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            color: var(--gray-lighter);
+            cursor: pointer;
+            padding: 8px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn.active { color: var(--gold); }
+        .nav-btn:hover { color: var(--forest); }
+        .nav-icon { font-size: 22px; }
+        .nav-label { font-size: 12px; font-weight: 600; }
+        
+        .hidden { display: none !important; }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--gray-bg);
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--gray-light);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: -2px;
+        }
+        
+        .tab.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }
+        
+        .tab:hover {
+            color: var(--forest);
+        }
+        
+        .alert {
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 2px solid var(--success);
+            color: #059669;
+        }
+        
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px solid var(--info);
+            color: #1d4ed8;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .case-times {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Modal -->
+    <div id="welcome" class="welcome-modal">
+        <div class="welcome-box">
+            <h2 class="welcome-title">Welcome to SterileField</h2>
+            <p class="welcome-text">Medical device case tracking for seamless coordination between reps and schedulers.</p>
+            
+            <button class="role-btn primary" onclick="selectView('rep')">
+                <div class="role-title">Rep View</div>
+                <div class="role-desc">Track cases, manage time, view surgeon preferences</div>
+            </button>
+            
+            <button class="role-btn" onclick="selectView('scheduler')">
+                <div class="role-title">Scheduler View</div>
+                <div class="role-desc">Schedule cases, manage surgeons, notify reps</div>
+            </button>
+            
+            <div style="background: rgba(26,77,46,0.08); padding: 14px; border-radius: 10px; margin-top: 20px; border: 2px solid rgba(26,77,46,0.15);">
+                <small style="color: #1f2937; line-height: 1.5;"><strong>Phase 1 MVP:</strong> Surgeon-centric workflow • Time tracking • Case management • No PHI</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div>
+            <div class="header-title">SterileField</div>
+            <div class="header-subtitle" id="viewMode">Rep View</div>
+            <div id="viewBadge" class="view-badge view-badge-rep">👤 REP MODE</div>
+        </div>
+        <button class="switch-btn" onclick="showWelcome()">Switch View</button>
+    </div>
+
+    <!-- REP VIEW: Combined Surgeons & Cases Page -->
+    <div id="repSurgeonList" class="content hidden">
+        <h1 class="page-title">My Surgeons</h1>
+        <p class="page-subtitle">South Jersey Territory</p>
+
+        <div id="repSurgeonListContent"></div>
+    </div>
+    
+    <!-- REP VIEW: Cases List (Chronological) -->
+    <div id="repCasesList" class="content hidden">
+        <h1 class="page-title">All Cases</h1>
+        <p class="page-subtitle">Sorted by surgery date</p>
+
+        <div class="tabs">
+            <button class="tab active" onclick="filterCasesList('today')">Today</button>
+            <button class="tab" onclick="filterCasesList('all')">All Cases</button>
+            <button class="tab" onclick="filterCasesList('mine')">My Cases</button>
+            <button class="tab" onclick="filterCasesList('unconfirmed')">Unconfirmed</button>
+        </div>
+
+        <div id="repCasesListContent"></div>
+    </div>
+    
+    <!-- REP VIEW: Territory Tab -->
+    <div id="repTerritory" class="content hidden">
+        <h1 class="page-title">Territory Hospitals</h1>
+        <p class="page-subtitle">All hospitals where cases can be performed</p>
+
+        <div id="repTerritoryContent"></div>
+    </div>
+    
+    <!-- REP VIEW: More Tab -->
+    <div id="repMore" class="content hidden">
+        <h1 class="page-title">More</h1>
+        <p class="page-subtitle">Additional options</p>
+
+        <div style="text-align: center; padding: 60px 20px; color: var(--gray-lighter);">
+            <div style="font-size: 48px; margin-bottom: 16px;">⚙️</div>
+            <div style="font-size: 16px;">Additional features coming soon</div>
+        </div>
+    </div>
+
+    <!-- REP VIEW: Surgeon Detail Modal -->
+    <div id="surgeonDetailModal" class="modal-overlay hidden" onclick="closeModal('surgeonDetailModal', event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title" id="surgeonDetailName">Dr. Jennifer Thompson</h2>
+                <button class="modal-close" onclick="closeModal('surgeonDetailModal')">✕</button>
+            </div>
+            
+            <div id="surgeonDetailContent"></div>
+        </div>
+    </div>
+
+    <!-- Case Time Entry Modal -->
+    <div id="timeEntryModal" class="modal-overlay hidden" onclick="closeModal('timeEntryModal', event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title" id="timeEntryCaseId">CASE-4721</h2>
+                <button class="modal-close" onclick="closeModal('timeEntryModal')">✕</button>
+            </div>
+            
+            <div id="timeEntryContent"></div>
+        </div>
+    </div>
+
+    <!-- SCHEDULER VIEW: Surgeon List -->
+    <div id="schedulerSurgeonList" class="content hidden">
+        <h1 class="page-title">Manage Surgeons</h1>
+        <p class="page-subtitle">Schedule cases and manage preferences</p>
+
+        <div id="schedulerSurgeonListContent"></div>
+    </div>
+
+    <!-- SCHEDULER VIEW: Surgeon Detail -->
+    <div id="schedulerSurgeonDetail" class="content hidden">
+        <button class="btn btn-secondary" onclick="backToSchedulerList()">
+            ← Back to Surgeons
+        </button>
+
+        <div id="schedulerDetailContent"></div>
+    </div>
+
+    <!-- Schedule Case Modal -->
+    <div id="scheduleCaseModal" class="modal-overlay hidden" onclick="closeModal('scheduleCaseModal', event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title">Schedule New Case</h2>
+                <button class="modal-close" onclick="closeModal('scheduleCaseModal')">✕</button>
+            </div>
+            
+            <form id="scheduleCaseForm" onsubmit="submitCase(event)">
+                <input type="hidden" id="caseEditId" value="">
+                <input type="hidden" id="caseSurgeonId" value="">
+                
+                <div class="form-group">
+                    <label class="form-label">Procedure *</label>
+                    <input type="text" class="form-input" id="caseProcedure" placeholder="e.g., L4-L5 Posterior Fusion" required>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Date *</label>
+                        <input type="date" class="form-input" id="caseDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Scheduled Start Time *</label>
+                        <input type="time" class="form-input" id="caseTime" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Hospital *</label>
+                    <select class="form-select" id="caseHospital" required>
+                        <option value="">Select hospital...</option>
+                        <option>Shore Medical Center</option>
+                        <option>AtlantiCare Regional Medical Center</option>
+                        <option>Cooper University Hospital</option>
+                        <option>Virtua Voorhees Hospital</option>
+                        <option>Inspira Medical Center Vineland</option>
+                        <option>Kennedy University Hospital</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">OR Room</label>
+                    <input type="text" class="form-input" id="caseRoom" placeholder="e.g., OR 2">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Assigned Rep *</label>
+                    <select class="form-select" id="caseRep" required>
+                        <option value="">Select rep...</option>
+                        <option value="rep1">John Smith</option>
+                        <option value="rep2">Sarah Johnson</option>
+                        <option value="rep3">Michael Chen</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Special Notes</label>
+                    <textarea class="form-textarea" id="caseNotes" placeholder="Any special requirements or notes..."></textarea>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        Schedule Case
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('scheduleCaseModal')">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Preferences Modal -->
+    <div id="editPreferencesModal" class="modal-overlay hidden" onclick="closeModal('editPreferencesModal', event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title" id="editPrefSurgeonName">Edit Preferences</h2>
+                <button class="modal-close" onclick="closeModal('editPreferencesModal')">✕</button>
+            </div>
+            
+            <form id="editPreferencesForm" onsubmit="savePreferences(event)">
+                <input type="hidden" id="prefSurgeonId" value="">
+                
+                <div class="form-group">
+                    <label class="form-label">General Preferences</label>
+                    <textarea class="form-textarea" id="prefGeneral" placeholder="General workflow and preferences..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Implant Preferences</label>
+                    <textarea class="form-textarea" id="prefImplants" placeholder="Preferred sizes, types, brands..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Technique Notes</label>
+                    <textarea class="form-textarea" id="prefTechnique" placeholder="Surgical approach, positioning, special techniques..."></textarea>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        Save Preferences
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editPreferencesModal')">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <button id="navSurgeons" class="nav-btn active" onclick="navigate('surgeons')">
+            <div class="nav-icon">👥</div>
+            <div class="nav-label">Surgeons</div>
+        </button>
+        <button id="navCases" class="nav-btn" onclick="navigate('cases')">
+            <span id="casesNotificationBadge" class="notification-badge hidden">0</span>
+            <div class="nav-icon">📋</div>
+            <div class="nav-label">Cases</div>
+        </button>
+        <button id="navTerritory" class="nav-btn" onclick="navigate('territory')">
+            <div class="nav-icon">📍</div>
+            <div class="nav-label">Territory</div>
+        </button>
+        <button id="navMore" class="nav-btn" onclick="navigate('more')">
+            <div class="nav-icon">☰</div>
+            <div class="nav-label">More</div>
+        </button>
+    </div>
+
+    <script>
+        let currentView = 'rep';
+        let currentTab = 'surgeons';
+        let selectedSurgeonId = null;
+
+        // Data structures
+        const surgeons = [
+            {
+                id: 1,
+                name: 'Dr. Jennifer Thompson',
+                specialty: 'Spine Surgery',
+                hospital: 'Shore Medical Center',
+                scheduler: 'Linda Chen',
+                casesYTD: 48,
+                preferences: {
+                    general: 'Opens implants at incision. Very punctual - starts on time. Likes reps in room for closing.',
+                    implants: 'Prefers 5.5mm screws for L4-L5. Uses Expedium system. Always requests BMP-2.',
+                    technique: 'Posterior midline approach. Patient positioned prone. Meticulous about positioning.'
+                }
+            },
+            {
+                id: 2,
+                name: 'Dr. Rajesh Patel',
+                specialty: 'Neurosurgery',
+                hospital: 'AtlantiCare Regional MC',
+                scheduler: 'Maria Rodriguez',
+                casesYTD: 34,
+                preferences: {
+                    general: 'Very particular about positioning. Needs all sizes available. Cases may run longer than estimated.',
+                    implants: 'Uses Synthes cervical system. Wants complete cage size range (6-12mm).',
+                    technique: 'Anterior cervical approach. Meticulous dissection. Patient positioning critical.'
+                }
+            },
+            {
+                id: 3,
+                name: 'Dr. Michael Romano',
+                specialty: 'Orthopedic Spine',
+                hospital: 'Cooper University Hospital',
+                scheduler: 'Patricia Green',
+                casesYTD: 56,
+                preferences: {
+                    general: 'High volume surgeon. Wants everything ready before patient arrival. Fast-paced.',
+                    implants: 'Uses BMP frequently. Prefers Viper 2 system. Standard screw sizes.',
+                    technique: 'Transforaminal approach for TLIF. Efficient workflow. Minimal conversation during case.'
+                }
+            },
+            {
+                id: 4,
+                name: 'Dr. Sarah Kim',
+                specialty: 'Spine Surgery',
+                hospital: 'Virtua Voorhees',
+                scheduler: 'Jennifer Lee',
+                casesYTD: 41,
+                preferences: {
+                    general: 'Tech-savvy. Open to rep input. Friendly OR environment. Flexible timing.',
+                    implants: 'Prefers minimally invasive systems. Uses percutaneous screws when possible.',
+                    technique: 'MIS approach preferred. Uses navigation. Patient safety priority.'
+                }
+            }
+        ];
+
+        const cases = [
+            {
+                id: 'CASE-4721',
+                surgeonId: 1,
+                procedure: 'L4-L5 Posterior Fusion',
+                date: new Date(Date.now() - 86400000), // Yesterday
+                scheduledTime: '07:30',
+                timeIn: '07:42',
+                timeOut: '10:35',
+                hospital: 'Shore Medical Center',
+                room: 'OR 2',
+                notes: 'Patient positioned prone. All implants ready.',
+                assignedRep: 'rep1',
+                status: 'completed',
+                confirmed: true,
+                confirmedAt: new Date(Date.now() - 90000000),
+                confirmedBy: 'John Smith'
+            },
+            {
+                id: 'CASE-4722',
+                surgeonId: 2,
+                procedure: 'C5-C6 ACDF',
+                date: new Date(),
+                scheduledTime: '13:00',
+                timeIn: '13:05',
+                timeOut: null,
+                hospital: 'AtlantiCare Regional Medical Center',
+                room: 'OR 4',
+                notes: 'Need all cage sizes available.',
+                assignedRep: 'rep1',
+                status: 'in-progress',
+                confirmed: true,
+                confirmedAt: new Date(Date.now() - 7200000),
+                confirmedBy: 'John Smith'
+            },
+            {
+                id: 'CASE-4723',
+                surgeonId: 1,
+                procedure: 'L5-S1 TLIF',
+                date: new Date(Date.now() + 86400000), // Tomorrow
+                scheduledTime: '08:00',
+                timeIn: null,
+                timeOut: null,
+                hospital: 'Cooper University Hospital',
+                room: 'OR 1',
+                notes: 'Will need navigation system.',
+                assignedRep: 'rep1',
+                status: 'scheduled',
+                confirmed: false,
+                confirmedAt: null,
+                confirmedBy: null
+            },
+            {
+                id: 'CASE-4724',
+                surgeonId: 3,
+                procedure: 'L3-L4 Posterior Fusion',
+                date: new Date(Date.now() + 172800000), // Day after tomorrow
+                scheduledTime: '07:00',
+                timeIn: null,
+                timeOut: null,
+                hospital: 'Cooper University Hospital',
+                room: 'OR 3',
+                notes: 'Early start. Have trays ready night before.',
+                assignedRep: 'rep2',
+                status: 'scheduled',
+                confirmed: false,
+                confirmedAt: null,
+                confirmedBy: null
+            }
+        ];
+
+        const reps = {
+            rep1: 'John Smith',
+            rep2: 'Sarah Johnson',
+            rep3: 'Michael Chen'
+        };
+        
+        const hospitals = [
+            {
+                name: 'Shore Medical Center',
+                city: 'Somers Point, NJ',
+                surgeons: [1],
+                cases: 2
+            },
+            {
+                name: 'AtlantiCare Regional Medical Center',
+                city: 'Atlantic City, NJ',
+                surgeons: [2],
+                cases: 1
+            },
+            {
+                name: 'Cooper University Hospital',
+                city: 'Camden, NJ',
+                surgeons: [1, 3],
+                cases: 2
+            },
+            {
+                name: 'Virtua Voorhees Hospital',
+                city: 'Voorhees, NJ',
+                surgeons: [4],
+                cases: 0
+            },
+            {
+                name: 'Inspira Medical Center Vineland',
+                city: 'Vineland, NJ',
+                surgeons: [],
+                cases: 0
+            },
+            {
+                name: 'Kennedy University Hospital',
+                city: 'Cherry Hill, NJ',
+                surgeons: [],
+                cases: 0
+            }
+        ];
+
+        // Helper functions
+        function formatDate(date) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const compareDate = new Date(date);
+            compareDate.setHours(0, 0, 0, 0);
+            
+            const diffTime = compareDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Tomorrow';
+            if (diffDays === -1) return 'Yesterday';
+            
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function formatTime(timeStr) {
+            if (!timeStr) return null;
+            const [hours, minutes] = timeStr.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour % 12 || 12;
+            return `${hour12}:${minutes} ${ampm}`;
+        }
+        
+        function formatConfirmTime(date) {
+            if (!date) return '';
+            const now = new Date();
+            const diffMs = now - new Date(date);
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            
+            if (diffHours < 1) return 'Just now';
+            if (diffHours < 24) return `${diffHours}h ago`;
+            const diffDays = Math.floor(diffHours / 24);
+            return `${diffDays}d ago`;
+        }
+
+        function calculateDelay(scheduled, actual) {
+            if (!scheduled || !actual) return null;
+            const [sh, sm] = scheduled.split(':').map(Number);
+            const [ah, am] = actual.split(':').map(Number);
+            const scheduledMinutes = sh * 60 + sm;
+            const actualMinutes = ah * 60 + am;
+            const diff = actualMinutes - scheduledMinutes;
+            if (diff === 0) return 'On Time';
+            return diff > 0 ? `+${diff} min` : `${diff} min`;
+        }
+
+        function getPendingCases(surgeonId) {
+            return cases.filter(c => c.surgeonId === surgeonId && c.status !== 'completed').length;
+        }
+        
+        // Update notification badge for unconfirmed cases
+        function updateCasesNotificationBadge() {
+            const unconfirmedCount = cases.filter(c => !c.confirmed && c.status === 'scheduled' && c.assignedRep === 'rep1').length;
+            const badge = document.getElementById('casesNotificationBadge');
+            
+            if (badge) {
+                if (unconfirmedCount > 0) {
+                    badge.textContent = unconfirmedCount;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+        }
+        
+        // Confirm case function for reps
+        function confirmCase(caseId) {
+            const caseData = cases.find(c => c.id === caseId);
+            if (caseData) {
+                caseData.confirmed = true;
+                caseData.confirmedAt = new Date();
+                caseData.confirmedBy = 'John Smith'; // Current rep
+                
+                // Update notification badge
+                updateCasesNotificationBadge();
+                
+                // Refresh current view
+                if (currentTab === 'surgeons') {
+                    renderRepSurgeonList();
+                } else if (currentTab === 'cases') {
+                    // Refresh the current filter
+                    const activeTab = document.querySelector('#repCasesList .tab.active');
+                    if (activeTab) {
+                        if (activeTab.textContent.includes('Today')) renderCasesList('today');
+                        else if (activeTab.textContent.includes('All')) renderCasesList('all');
+                        else if (activeTab.textContent.includes('My')) renderCasesList('mine');
+                        else if (activeTab.textContent.includes('Unconfirmed')) renderCasesList('unconfirmed');
+                    }
+                }
+                
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success';
+                alert.style.cssText = 'position: fixed; top: 80px; right: 24px; z-index: 1000; animation: slideIn 0.5s ease-out;';
+                alert.innerHTML = '<span>✅</span><div>Case confirmed! Scheduler has been notified.</div>';
+                document.body.appendChild(alert);
+                
+                setTimeout(() => alert.remove(), 3000);
+            }
+        }
+        
+        // Assign case to current rep
+        function assignToMe(caseId) {
+            const caseData = cases.find(c => c.id === caseId);
+            if (caseData) {
+                caseData.assignedRep = 'rep1'; // Current rep
+                
+                // Update notification badge (newly assigned cases need confirmation)
+                updateCasesNotificationBadge();
+                
+                // Refresh current view
+                if (currentTab === 'surgeons') {
+                    renderRepSurgeonList();
+                } else if (currentTab === 'cases') {
+                    const activeTab = document.querySelector('#repCasesList .tab.active');
+                    if (activeTab) {
+                        if (activeTab.textContent.includes('Today')) renderCasesList('today');
+                        else if (activeTab.textContent.includes('All')) renderCasesList('all');
+                        else if (activeTab.textContent.includes('My')) renderCasesList('mine');
+                        else if (activeTab.textContent.includes('Unconfirmed')) renderCasesList('unconfirmed');
+                    }
+                }
+                
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success';
+                alert.style.cssText = 'position: fixed; top: 80px; right: 24px; z-index: 1000; animation: slideIn 0.5s ease-out;';
+                alert.innerHTML = '<span>✅</span><div>Case assigned to you!</div>';
+                document.body.appendChild(alert);
+                
+                setTimeout(() => alert.remove(), 3000);
+            }
+        }
+
+        // View selection
+        function selectView(view) {
+            currentView = view;
+            document.getElementById('welcome').classList.add('hidden');
+            document.getElementById('viewMode').textContent = view === 'rep' ? 'Rep View' : 'Scheduler View';
+            
+            // Update view badge
+            const badge = document.getElementById('viewBadge');
+            if (view === 'rep') {
+                badge.textContent = '👤 REP MODE';
+                badge.className = 'view-badge view-badge-rep';
+                // Update notification badge for rep view
+                updateCasesNotificationBadge();
+            } else {
+                badge.textContent = '📋 SCHEDULER MODE';
+                badge.className = 'view-badge view-badge-scheduler';
+            }
+            
+            if (view === 'rep') {
+                navigate('surgeons');
+            } else {
+                showSchedulerView();
+            }
+        }
+
+        function showWelcome() {
+            document.getElementById('welcome').classList.remove('hidden');
+        }
+
+        // Navigation
+        function navigate(page) {
+            // Hide all pages
+            document.getElementById('repSurgeonList').classList.add('hidden');
+            document.getElementById('repCasesList').classList.add('hidden');
+            document.getElementById('repTerritory').classList.add('hidden');
+            document.getElementById('repMore').classList.add('hidden');
+            
+            // Remove active from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            
+            currentTab = page;
+            
+            if (page === 'surgeons') {
+                if (currentView === 'rep') {
+                    renderRepSurgeonList();
+                    document.getElementById('repSurgeonList').classList.remove('hidden');
+                }
+                document.getElementById('navSurgeons').classList.add('active');
+            } else if (page === 'cases') {
+                if (currentView === 'rep') {
+                    document.getElementById('repCasesList').classList.remove('hidden');
+                    renderCasesList('today');
+                    // Set first tab (Today) as active
+                    setTimeout(() => {
+                        const tabs = document.querySelectorAll('#repCasesList .tab');
+                        tabs.forEach(t => t.classList.remove('active'));
+                        if (tabs[0]) tabs[0].classList.add('active');
+                    }, 10);
+                }
+                document.getElementById('navCases').classList.add('active');
+            } else if (page === 'territory') {
+                if (currentView === 'rep') {
+                    renderRepTerritory();
+                    document.getElementById('repTerritory').classList.remove('hidden');
+                }
+                document.getElementById('navTerritory').classList.add('active');
+            } else if (page === 'more') {
+                if (currentView === 'rep') {
+                    document.getElementById('repMore').classList.remove('hidden');
+                }
+                document.getElementById('navMore').classList.add('active');
+            }
+        }
+
+        // Rep View: Render surgeon list
+        function renderRepSurgeonList() {
+            const content = document.getElementById('repSurgeonListContent');
+            
+            content.innerHTML = surgeons.map(surgeon => {
+                const surgeonCases = cases.filter(c => c.surgeonId === surgeon.id);
+                const upcomingCases = surgeonCases.filter(c => c.status === 'scheduled');
+                const currentCases = surgeonCases.filter(c => c.status === 'in-progress');
+                const pastCases = surgeonCases.filter(c => c.status === 'completed');
+                
+                return `
+                    <div class="surgeon-card" style="cursor: default; margin-bottom: 24px;">
+                        <div class="surgeon-card-header">
+                            <div>
+                                <div class="surgeon-name">${surgeon.name}</div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                ${upcomingCases.length > 0 ? `<div class="pending-badge">${upcomingCases.length} upcoming</div>` : ''}
+                                ${currentCases.length > 0 ? `<div class="pending-badge" style="background: var(--info);">${currentCases.length} current</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="surgeon-specialty">${surgeon.specialty}</div>
+                        <div class="surgeon-hospital">📍 ${surgeon.hospital}</div>
+                        <div class="surgeon-stats">
+                            <div><strong>${surgeon.casesYTD}</strong> cases YTD</div>
+                            <div>Scheduler: <strong>${surgeon.scheduler}</strong></div>
+                        </div>
+                        
+                        <!-- Preferences Section -->
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-secondary btn-small" onclick="toggleSection('pref-${surgeon.id}')" style="width: 100%;">
+                                <span id="pref-icon-${surgeon.id}">▶</span> View Preferences & Techniques
+                            </button>
+                            <div id="pref-${surgeon.id}" class="hidden" style="margin-top: 12px; animation: slideIn 0.3s ease-out;">
+                                <div class="pref-section">
+                                    <div class="pref-title">General Preferences</div>
+                                    <div class="pref-text">${surgeon.preferences.general}</div>
+                                </div>
+                                
+                                <div class="pref-section">
+                                    <div class="pref-title">Implant Preferences</div>
+                                    <div class="pref-text">${surgeon.preferences.implants}</div>
+                                </div>
+                                
+                                <div class="pref-section" style="margin-bottom: 0;">
+                                    <div class="pref-title">Technique Notes</div>
+                                    <div class="pref-text">${surgeon.preferences.technique}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cases Section -->
+                        ${surgeonCases.length > 0 ? `
+                            <div style="margin-top: 16px;">
+                                <button class="btn btn-gold btn-small" onclick="toggleSection('cases-${surgeon.id}')" style="width: 100%;">
+                                    <span id="cases-icon-${surgeon.id}">▶</span> View Cases (${surgeonCases.length})
+                                </button>
+                                <div id="cases-${surgeon.id}" class="hidden" style="margin-top: 12px; animation: slideIn 0.3s ease-out;">
+                                    ${upcomingCases.length > 0 ? `
+                                        <h4 style="font-size: 14px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 12px 0;">
+                                            Upcoming (${upcomingCases.length})
+                                        </h4>
+                                        ${upcomingCases.map(c => renderInlineCaseCard(c)).join('')}
+                                    ` : ''}
+                                    
+                                    ${currentCases.length > 0 ? `
+                                        <h4 style="font-size: 14px; font-weight: 700; color: var(--info); text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 12px 0;">
+                                            Current (${currentCases.length})
+                                        </h4>
+                                        ${currentCases.map(c => renderInlineCaseCard(c)).join('')}
+                                    ` : ''}
+                                    
+                                    ${pastCases.length > 0 ? `
+                                        <h4 style="font-size: 14px; font-weight: 700; color: var(--gray-light); text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 12px 0;">
+                                            Past (${pastCases.length})
+                                        </h4>
+                                        ${pastCases.slice(0, 3).map(c => renderInlineCaseCard(c)).join('')}
+                                        ${pastCases.length > 3 ? `
+                                            <div style="text-align: center; padding: 12px; color: var(--gray-lighter); font-size: 13px;">
+                                                + ${pastCases.length - 3} more completed cases
+                                            </div>
+                                        ` : ''}
+                                    ` : ''}
+                                </div>
+                            </div>
+                        ` : `
+                            <div style="margin-top: 16px; padding: 12px; background: rgba(26, 77, 46, 0.05); border-radius: 8px; text-align: center; color: var(--gray-light); font-size: 14px;">
+                                No cases scheduled for this surgeon
+                            </div>
+                        `}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Toggle expandable sections
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const icon = document.getElementById(sectionId.replace('cases-', 'cases-icon-').replace('pref-', 'pref-icon-'));
+            
+            if (section.classList.contains('hidden')) {
+                section.classList.remove('hidden');
+                if (icon) icon.textContent = '▼';
+            } else {
+                section.classList.add('hidden');
+                if (icon) icon.textContent = '▶';
+            }
+        }
+
+        // Rep View: Show surgeon detail
+        function showSurgeonDetail(surgeonId) {
+            const surgeon = surgeons.find(s => s.id === surgeonId);
+            if (!surgeon) return;
+            
+            document.getElementById('surgeonDetailName').textContent = surgeon.name;
+            
+            const surgeonCases = cases.filter(c => c.surgeonId === surgeonId && c.status !== 'completed');
+            
+            const content = `
+                <p class="page-subtitle" style="margin-bottom: 24px;">${surgeon.specialty} • ${surgeon.hospital}</p>
+                
+                <div class="pref-section">
+                    <div class="pref-title">General Preferences</div>
+                    <div class="pref-text">${surgeon.preferences.general}</div>
+                </div>
+                
+                <div class="pref-section">
+                    <div class="pref-title">Implant Preferences</div>
+                    <div class="pref-text">${surgeon.preferences.implants}</div>
+                </div>
+                
+                <div class="pref-section">
+                    <div class="pref-title">Technique Notes</div>
+                    <div class="pref-text">${surgeon.preferences.technique}</div>
+                </div>
+                
+                ${surgeonCases.length > 0 ? `
+                    <h3 style="font-family: Georgia, serif; font-size: 20px; color: var(--forest); margin: 24px 0 16px 0;">
+                        Upcoming Cases (${surgeonCases.length})
+                    </h3>
+                    ${surgeonCases.map(c => renderCaseCard(c, false)).join('')}
+                ` : `
+                    <div class="alert alert-info" style="margin-top: 24px;">
+                        <span>📋</span>
+                        <div>No upcoming cases for this surgeon.</div>
+                    </div>
+                `}
+            `;
+            
+            document.getElementById('surgeonDetailContent').innerHTML = content;
+            document.getElementById('surgeonDetailModal').classList.remove('hidden');
+        }
+
+        
+        // Render compact inline case card for rep view
+        function renderInlineCaseCard(caseData) {
+            const delay = calculateDelay(caseData.scheduledTime, caseData.timeIn);
+            const isAssigned = caseData.assignedRep === 'rep1';
+            
+            let statusBadge = '';
+            if (caseData.status === 'completed') statusBadge = '<span class="badge badge-green">Completed</span>';
+            else if (caseData.status === 'in-progress') statusBadge = '<span class="badge badge-blue">In Progress</span>';
+            else if (caseData.status === 'scheduled') statusBadge = '<span class="badge badge-gray">Scheduled</span>';
+            
+            // Confirmation badge
+            let confirmBadge = '';
+            if (caseData.confirmed) {
+                confirmBadge = '<span class="badge badge-green">✓ Confirmed</span>';
+            } else if (caseData.status === 'scheduled') {
+                confirmBadge = '<span class="badge badge-pending">⚠ Awaiting Confirmation</span>';
+            }
+            
+            return `
+                <div style="background: white; border: 2px solid ${isAssigned ? 'var(--gold)' : 'var(--gray-bg)'}; border-radius: 10px; padding: 16px; margin-bottom: 10px; ${isAssigned ? 'background: linear-gradient(135deg, #fffbf0 0%, white 100%);' : ''}">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <span class="case-id">${caseData.id}</span>
+                            ${isAssigned ? '<span class="badge badge-gold">Assigned to Me</span>' : ''}
+                            ${statusBadge}
+                            ${confirmBadge}
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            ${caseData.status !== 'completed' ? `
+                                <button class="btn btn-gold btn-small" onclick="openTimeEntry('${caseData.id}'); event.stopPropagation();">
+                                    ⏱️ Times
+                                </button>
+                            ` : ''}
+                            ${!caseData.confirmed && caseData.status === 'scheduled' && isAssigned ? `
+                                <button class="btn btn-primary btn-small" onclick="confirmCase('${caseData.id}'); event.stopPropagation();">
+                                    ✓ Confirm
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    <div style="font-weight: 600; font-size: 16px; color: var(--slate); margin-bottom: 6px;">
+                        ${caseData.procedure}
+                    </div>
+                    <div style="font-size: 14px; color: var(--gray-light); margin-bottom: 10px;">
+                        📍 ${caseData.hospital} • ${caseData.room || 'TBD'}
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; padding: 10px; background: rgba(26, 77, 46, 0.04); border-radius: 8px; font-size: 13px;">
+                        <div>
+                            <div style="font-size: 10px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-bottom: 3px;">Date</div>
+                            <div style="font-weight: 600;">${formatDate(caseData.date)}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 10px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-bottom: 3px;">Scheduled</div>
+                            <div style="font-weight: 600;">${formatTime(caseData.scheduledTime)}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 10px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-bottom: 3px;">Time In</div>
+                            <div style="font-weight: 600; ${delay && delay.includes('+') ? 'color: var(--danger);' : ''} ${!caseData.timeIn ? 'color: var(--gray-lighter); font-style: italic;' : ''}">
+                                ${caseData.timeIn ? formatTime(caseData.timeIn) : 'Not set'}
+                                ${delay && caseData.timeIn ? `<br><small style="font-size: 10px;">(${delay})</small>` : ''}
+                            </div>
+                        </div>
+                        <div>
+                            <div style="font-size: 10px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-bottom: 3px;">Time Out</div>
+                            <div style="font-weight: 600; ${!caseData.timeOut ? 'color: var(--gray-lighter); font-style: italic;' : ''}">
+                                ${caseData.timeOut ? formatTime(caseData.timeOut) : 'Not set'}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${caseData.notes ? `
+                        <div style="margin-top: 10px; padding: 10px; background: rgba(184,134,11,0.08); border-radius: 8px; font-size: 13px; border-left: 3px solid var(--gold);">
+                            <strong>Notes:</strong> ${caseData.notes}
+                        </div>
+                    ` : ''}
+                    
+                    ${caseData.confirmed ? `
+                        <div style="margin-top: 10px; padding: 8px; background: rgba(34, 197, 94, 0.08); border-radius: 6px; font-size: 12px; color: #059669;">
+                            ✓ Confirmed by ${caseData.confirmedBy} • ${formatConfirmTime(caseData.confirmedAt)}
+                        </div>
+                    ` : ''}
+                    
+                    ${!isAssigned ? `
+                        <div style="margin-top: 10px; text-align: center;">
+                            <button class="btn btn-secondary btn-small" onclick="assignToMe('${caseData.id}'); event.stopPropagation();" style="width: 100%;">
+                                Assign to Me
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+        
+        // Rep View: Render chronological cases list
+        function renderCasesList(filter) {
+            const content = document.getElementById('repCasesListContent');
+            
+            // Update tab active states
+            document.querySelectorAll('#repCasesList .tab').forEach(tab => tab.classList.remove('active'));
+            event?.target?.classList.add('active');
+            
+            let filteredCases = [...cases]; // Clone array
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (filter === 'today') {
+                filteredCases = filteredCases.filter(c => {
+                    const caseDate = new Date(c.date);
+                    caseDate.setHours(0, 0, 0, 0);
+                    return caseDate.getTime() === today.getTime();
+                });
+            } else if (filter === 'mine') {
+                filteredCases = filteredCases.filter(c => c.assignedRep === 'rep1');
+            } else if (filter === 'unconfirmed') {
+                filteredCases = filteredCases.filter(c => !c.confirmed && c.status === 'scheduled');
+            }
+            
+            // Sort by date (earliest first)
+            filteredCases.sort((a, b) => a.date - b.date);
+            
+            if (filteredCases.length === 0) {
+                let emptyMessage = 'No cases found.';
+                let emptyIcon = '📋';
+                let emptyAction = '';
+                
+                if (filter === 'today') {
+                    emptyMessage = 'No cases scheduled for today';
+                    emptyIcon = '🎉';
+                    emptyAction = '<div style="margin-top: 12px; font-size: 14px; color: var(--gray-light);">Check the "All Cases" tab to see upcoming cases</div>';
+                } else if (filter === 'mine') {
+                    emptyMessage = 'No cases assigned to you yet';
+                    emptyIcon = '👤';
+                    emptyAction = '<div style="margin-top: 12px; font-size: 14px; color: var(--gray-light);">Browse "All Cases" to find cases you can assign to yourself</div>';
+                } else if (filter === 'unconfirmed') {
+                    emptyMessage = 'All cases are confirmed!';
+                    emptyIcon = '✅';
+                    emptyAction = '<div style="margin-top: 12px; font-size: 14px; color: var(--success); font-weight: 600;">Great work! You\'re all caught up.</div>';
+                }
+                
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 64px; margin-bottom: 16px;">${emptyIcon}</div>
+                        <div style="font-size: 20px; font-weight: 600; color: var(--forest); margin-bottom: 8px;">${emptyMessage}</div>
+                        ${emptyAction}
+                    </div>
+                `;
+                return;
+            }
+            
+            // Group by date
+            const groupedCases = {};
+            filteredCases.forEach(c => {
+                const dateKey = c.date.toDateString();
+                if (!groupedCases[dateKey]) {
+                    groupedCases[dateKey] = [];
+                }
+                groupedCases[dateKey].push(c);
+            });
+            
+            let html = '';
+            Object.keys(groupedCases).forEach(dateKey => {
+                const casesForDate = groupedCases[dateKey];
+                const firstCase = casesForDate[0];
+                
+                html += `
+                    <div style="margin-bottom: 32px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 3px solid var(--gold);">
+                            <h3 style="font-family: Georgia, serif; font-size: 24px; color: var(--forest); margin: 0;">
+                                ${formatDate(firstCase.date)}
+                            </h3>
+                            <div style="font-size: 14px; color: var(--gray-light); font-weight: 500;">
+                                ${firstCase.date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                            </div>
+                            <div style="margin-left: auto; background: var(--forest); color: white; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700;">
+                                ${casesForDate.length} ${casesForDate.length === 1 ? 'case' : 'cases'}
+                            </div>
+                        </div>
+                        ${casesForDate.map(c => renderCasesListCard(c)).join('')}
+                    </div>
+                `;
+            });
+            
+            content.innerHTML = html;
+        }
+        
+        function filterCasesList(filter) {
+            renderCasesList(filter);
+        }
+        
+        // Render case card for chronological list
+        function renderCasesListCard(caseData) {
+            const surgeon = surgeons.find(s => s.id === caseData.surgeonId);
+            const delay = calculateDelay(caseData.scheduledTime, caseData.timeIn);
+            const isAssigned = caseData.assignedRep === 'rep1';
+            
+            let statusBadge = '';
+            if (caseData.status === 'completed') statusBadge = '<span class="badge badge-green">Completed</span>';
+            else if (caseData.status === 'in-progress') statusBadge = '<span class="badge badge-blue">In Progress</span>';
+            else if (caseData.status === 'scheduled') statusBadge = '<span class="badge badge-gray">Scheduled</span>';
+            
+            let confirmBadge = '';
+            if (caseData.confirmed) {
+                confirmBadge = '<span class="badge badge-green">✓ Confirmed</span>';
+            } else if (caseData.status === 'scheduled') {
+                confirmBadge = '<span class="badge badge-pending">⚠ Awaiting Confirmation</span>';
+            }
+            
+            return `
+                <div class="case-card ${isAssigned ? 'assigned' : ''}" style="margin-bottom: 14px;">
+                    <div class="case-header">
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <span class="case-id">${caseData.id}</span>
+                            ${isAssigned ? '<span class="badge badge-gold">Assigned to Me</span>' : ''}
+                            ${statusBadge}
+                            ${confirmBadge}
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            ${caseData.status !== 'completed' ? `
+                                <button class="btn btn-gold btn-small" onclick="openTimeEntry('${caseData.id}')">
+                                    ⏱️ Times
+                                </button>
+                            ` : ''}
+                            ${!caseData.confirmed && caseData.status === 'scheduled' && isAssigned ? `
+                                <button class="btn btn-primary btn-small" onclick="confirmCase('${caseData.id}')">
+                                    ✓ Confirm
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                    
+                    <div style="font-weight: 700; font-size: 20px; color: var(--forest); margin-bottom: 8px; line-height: 1.3;">
+                        ${caseData.procedure}
+                    </div>
+                    <div class="case-surgeon" style="font-size: 15px; margin-bottom: 10px;">${surgeon ? surgeon.name : 'Unknown Surgeon'}</div>
+                    <div class="case-location" style="font-size: 15px;">📍 ${caseData.hospital} • ${caseData.room || 'TBD'}</div>
+                    
+                    <div class="case-times" style="background: linear-gradient(135deg, rgba(26, 77, 46, 0.06) 0%, rgba(184, 134, 11, 0.04) 100%); border: 1px solid rgba(26, 77, 46, 0.1); margin-top: 14px;">
+                        <div class="time-item">
+                            <div class="time-label">Scheduled Start</div>
+                            <div class="time-value" style="font-size: 17px; font-weight: 700;">${formatTime(caseData.scheduledTime)}</div>
+                        </div>
+                        <div class="time-item">
+                            <div class="time-label">Actual Time In</div>
+                            <div class="time-value ${caseData.timeIn ? '' : 'empty'} ${delay && delay.includes('+') ? 'delayed' : ''}" style="font-size: 17px; font-weight: 700;">
+                                ${caseData.timeIn ? formatTime(caseData.timeIn) : 'Not set'}
+                                ${delay && caseData.timeIn ? `<br><small style="font-size: 11px; font-weight: 600;">(${delay})</small>` : ''}
+                            </div>
+                        </div>
+                        <div class="time-item">
+                            <div class="time-label">Time Out</div>
+                            <div class="time-value ${caseData.timeOut ? '' : 'empty'}" style="font-size: 17px; font-weight: 700;">
+                                ${caseData.timeOut ? formatTime(caseData.timeOut) : 'Not set'}
+                            </div>
+                        </div>
+                        <div class="time-item">
+                            <div class="time-label">Assigned Rep</div>
+                            <div class="time-value" style="font-size: 15px; font-weight: 600;">${reps[caseData.assignedRep]}</div>
+                        </div>
+                    </div>
+                    
+                    ${caseData.notes ? `
+                        <div style="margin-top: 14px; padding: 12px; background: rgba(184,134,11,0.08); border-radius: 8px; font-size: 14px; border-left: 4px solid var(--gold);">
+                            <strong style="color: var(--gold);">📝 Notes:</strong> ${caseData.notes}
+                        </div>
+                    ` : ''}
+                    
+                    ${caseData.confirmed ? `
+                        <div style="margin-top: 14px; padding: 12px; background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; font-size: 13px; color: #059669; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 20px;">✅</span>
+                            <div>
+                                <strong>Confirmed</strong> by ${caseData.confirmedBy} • ${formatConfirmTime(caseData.confirmedAt)}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${!isAssigned ? `
+                        <div style="margin-top: 14px; text-align: center;">
+                            <button class="btn btn-secondary btn-small" onclick="assignToMe('${caseData.id}')" style="width: 100%;">
+                                👤 Assign to Me
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+        
+        // Rep View: Render territory hospitals
+        function renderRepTerritory() {
+            const content = document.getElementById('repTerritoryContent');
+            
+            content.innerHTML = hospitals.map(hospital => {
+                const surgeonList = hospital.surgeons.map(id => {
+                    const surgeon = surgeons.find(s => s.id === id);
+                    return surgeon ? surgeon.name : '';
+                }).filter(Boolean).join(', ');
+                
+                return `
+                    <div class="hospital-card" style="cursor: default;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                            <div>
+                                <div style="font-weight: 600; color: var(--forest); font-size: 18px; margin-bottom: 6px;">
+                                    ${hospital.name}
+                                </div>
+                                <div style="font-size: 14px; color: var(--gray-light); margin-bottom: 8px;">
+                                    📍 ${hospital.city}
+                                </div>
+                            </div>
+                            <div class="pending-badge ${hospital.cases === 0 ? 'none' : ''}">
+                                ${hospital.cases} ${hospital.cases === 1 ? 'case' : 'cases'}
+                            </div>
+                        </div>
+                        ${surgeonList ? `
+                            <div style="padding: 10px; background: rgba(26, 77, 46, 0.05); border-radius: 8px; margin-top: 12px;">
+                                <div style="font-size: 12px; color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                                    Available Surgeons
+                                </div>
+                                <div style="font-size: 14px; color: var(--slate);">
+                                    ${surgeonList}
+                                </div>
+                            </div>
+                        ` : `
+                            <div style="font-size: 13px; color: var(--gray-lighter); font-style: italic;">
+                                No surgeons currently assigned
+                            </div>
+                        `}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render case card
+        function renderCaseCard(caseData, showTimeEntry) {
+            const surgeon = surgeons.find(s => s.id === caseData.surgeonId);
+            const delay = calculateDelay(caseData.scheduledTime, caseData.timeIn);
+            const isAssigned = caseData.assignedRep === 'rep1'; // Assuming current user is rep1
+            
+            let statusBadge = '';
+            if (caseData.status === 'completed') statusBadge = '<span class="badge badge-green">Completed</span>';
+            else if (caseData.status === 'in-progress') statusBadge = '<span class="badge badge-blue">In Progress</span>';
+            else if (caseData.status === 'scheduled') statusBadge = '<span class="badge badge-gray">Scheduled</span>';
+            
+            return `
+                <div class="case-card ${isAssigned ? 'assigned' : ''}">
+                    <div class="case-header">
+                        <div>
+                            <span class="case-id">${caseData.id}</span>
+                            ${isAssigned ? '<span class="badge badge-gold">Assigned to Me</span>' : ''}
+                            ${statusBadge}
+                        </div>
+                        ${showTimeEntry && caseData.status !== 'completed' ? `
+                            <button class="btn btn-gold btn-small" onclick="openTimeEntry('${caseData.id}')">
+                                ⏱️ Update Times
+                            </button>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="case-title">${caseData.procedure}</div>
+                    <div class="case-surgeon">${surgeon.name}</div>
+                    <div class="case-location">📍 ${caseData.hospital} • ${caseData.room || 'TBD'}</div>
+                    
+                    <div class="case-times">
+                        <div class="time-item">
+                            <div class="time-label">Date</div>
+                            <div class="time-value">${formatDate(caseData.date)}</div>
+                        </div>
+                        <div class="time-item">
+                            <div class="time-label">Scheduled</div>
+                            <div class="time-value">${formatTime(caseData.scheduledTime)}</div>
+                        </div>
+                        <div class="time-item">
+                            <div class="time-label">Time In</div>
+                            <div class="time-value ${caseData.timeIn ? '' : 'empty'} ${delay && delay.includes('+') ? 'delayed' : ''}">
+                                ${caseData.timeIn ? formatTime(caseData.timeIn) : 'Not set'}
+                                ${delay && caseData.timeIn ? `<br><small>(${delay})</small>` : ''}
+                            </div>
+                        </div>
+                        <div class="time-item">
+                            <div class="time-label">Time Out</div>
+                            <div class="time-value ${caseData.timeOut ? '' : 'empty'}">
+                                ${caseData.timeOut ? formatTime(caseData.timeOut) : 'Not set'}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${caseData.notes ? `
+                        <div style="margin-top: 12px; padding: 10px; background: rgba(184,134,11,0.08); border-radius: 8px; font-size: 14px; border-left: 3px solid var(--gold);">
+                            <strong>Notes:</strong> ${caseData.notes}
+                        </div>
+                    ` : ''}
+                    
+                    <div style="margin-top: 12px; font-size: 12px; color: var(--gray-light);">
+                        Rep: <strong>${reps[caseData.assignedRep]}</strong>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Time entry
+        function openTimeEntry(caseId) {
+            const caseData = cases.find(c => c.id === caseId);
+            if (!caseData) return;
+            
+            const surgeon = surgeons.find(s => s.id === caseData.surgeonId);
+            
+            document.getElementById('timeEntryCaseId').textContent = caseId;
+            
+            const content = `
+                <div style="margin-bottom: 24px;">
+                    <div class="case-title">${caseData.procedure}</div>
+                    <div class="case-surgeon">${surgeon.name}</div>
+                    <div class="case-location">📍 ${caseData.hospital} • ${caseData.room || 'TBD'}</div>
+                    <div style="margin-top: 8px; color: var(--gray-light);">
+                        ${formatDate(caseData.date)} • Scheduled: ${formatTime(caseData.scheduledTime)}
+                    </div>
+                </div>
+                
+                <form id="timeEntryForm" onsubmit="saveTimeEntry(event, '${caseId}')">
+                    <div class="form-group">
+                        <label class="form-label">Time In (Actual Start)</label>
+                        <input type="time" class="form-input" id="timeInInput" value="${caseData.timeIn || ''}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Time Out (Actual End)</label>
+                        <input type="time" class="form-input" id="timeOutInput" value="${caseData.timeOut || ''}">
+                        <small style="color: var(--gray-light);">Leave empty if case is still in progress</small>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">
+                            Save Times
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('timeEntryModal')">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            `;
+            
+            document.getElementById('timeEntryContent').innerHTML = content;
+            document.getElementById('timeEntryModal').classList.remove('hidden');
+        }
+
+        function saveTimeEntry(event, caseId) {
+            event.preventDefault();
+            
+            const timeIn = document.getElementById('timeInInput').value;
+            const timeOut = document.getElementById('timeOutInput').value;
+            
+            const caseData = cases.find(c => c.id === caseId);
+            if (caseData) {
+                caseData.timeIn = timeIn;
+                caseData.timeOut = timeOut;
+                
+                if (timeOut) {
+                    caseData.status = 'completed';
+                } else {
+                    caseData.status = 'in-progress';
+                }
+            }
+            
+            closeModal('timeEntryModal');
+            
+            // Refresh the rep surgeon list view or cases list
+            if (currentView === 'rep') {
+                if (currentTab === 'surgeons') {
+                    renderRepSurgeonList();
+                } else if (currentTab === 'cases') {
+                    const activeTab = document.querySelector('#repCasesList .tab.active');
+                    if (activeTab) {
+                        if (activeTab.textContent.includes('All')) renderCasesList('all');
+                        else if (activeTab.textContent.includes('My')) renderCasesList('mine');
+                        else if (activeTab.textContent.includes('Unconfirmed')) renderCasesList('unconfirmed');
+                    }
+                }
+            }
+            
+            // Show success message
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success';
+            alert.style.cssText = 'position: fixed; top: 80px; right: 24px; z-index: 1000; animation: slideIn 0.5s ease-out;';
+            alert.innerHTML = '<span>✅</span><div>Times updated successfully!</div>';
+            document.body.appendChild(alert);
+            
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        // Scheduler View
+        function showSchedulerView() {
+            document.getElementById('repSurgeonList').classList.add('hidden');
+            document.getElementById('repCasesList').classList.add('hidden');
+            document.getElementById('repTerritory').classList.add('hidden');
+            document.getElementById('repMore').classList.add('hidden');
+            document.getElementById('schedulerSurgeonDetail').classList.add('hidden');
+            document.getElementById('schedulerSurgeonList').classList.remove('hidden');
+            
+            renderSchedulerSurgeonList();
+        }
+
+        function renderSchedulerSurgeonList() {
+            const content = document.getElementById('schedulerSurgeonListContent');
+            
+            content.innerHTML = surgeons.map(surgeon => {
+                const pending = getPendingCases(surgeon.id);
+                return `
+                    <div class="surgeon-card" onclick="showSchedulerSurgeonDetail(${surgeon.id})">
+                        <div class="surgeon-card-header">
+                            <div>
+                                <div class="surgeon-name">${surgeon.name}</div>
+                            </div>
+                            <div class="pending-badge ${pending === 0 ? 'none' : ''}">${pending} pending</div>
+                        </div>
+                        <div class="surgeon-specialty">${surgeon.specialty}</div>
+                        <div class="surgeon-hospital">📍 ${surgeon.hospital}</div>
+                        <div class="surgeon-stats">
+                            <div><strong>${surgeon.casesYTD}</strong> cases YTD</div>
+                            <div>Scheduler: <strong>${surgeon.scheduler}</strong></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showSchedulerSurgeonDetail(surgeonId) {
+            selectedSurgeonId = surgeonId;
+            const surgeon = surgeons.find(s => s.id === surgeonId);
+            if (!surgeon) return;
+            
+            document.getElementById('schedulerSurgeonList').classList.add('hidden');
+            document.getElementById('schedulerSurgeonDetail').classList.remove('hidden');
+            
+            const surgeonCases = cases.filter(c => c.surgeonId === surgeonId);
+            
+            const content = `
+                <h1 class="page-title" style="margin-top: 20px;">${surgeon.name}</h1>
+                <p class="page-subtitle">${surgeon.specialty} • ${surgeon.hospital}</p>
+                
+                <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                    <button class="btn btn-primary" onclick="openScheduleCase(${surgeonId})">
+                        ➕ Schedule New Case
+                    </button>
+                    <button class="btn btn-gold" onclick="openEditPreferences(${surgeonId})">
+                        ✏️ Edit Preferences
+                    </button>
+                </div>
+                
+                <div class="pref-section">
+                    <div class="pref-title">General Preferences</div>
+                    <div class="pref-text">${surgeon.preferences.general}</div>
+                </div>
+                
+                <div class="pref-section">
+                    <div class="pref-title">Implant Preferences</div>
+                    <div class="pref-text">${surgeon.preferences.implants}</div>
+                </div>
+                
+                <div class="pref-section">
+                    <div class="pref-title">Technique Notes</div>
+                    <div class="pref-text">${surgeon.preferences.technique}</div>
+                </div>
+                
+                <h2 style="font-family: Georgia, serif; font-size: 24px; color: var(--forest); margin: 32px 0 16px 0;">
+                    All Cases (${surgeonCases.length})
+                </h2>
+                
+                ${surgeonCases.map(c => renderSchedulerCaseCard(c)).join('')}
+            `;
+            
+            document.getElementById('schedulerDetailContent').innerHTML = content;
+        }
+
+        function renderSchedulerCaseCard(caseData) {
+            let statusBadge = '';
+            if (caseData.status === 'completed') statusBadge = '<span class="badge badge-green">Completed</span>';
+            else if (caseData.status === 'in-progress') statusBadge = '<span class="badge badge-blue">In Progress</span>';
+            else if (caseData.status === 'scheduled') statusBadge = '<span class="badge badge-gray">Scheduled</span>';
+            
+            // Confirmation status for scheduler
+            let confirmBadge = '';
+            if (caseData.confirmed) {
+                confirmBadge = '<span class="badge badge-green">✓ Rep Confirmed</span>';
+            } else if (caseData.status === 'scheduled') {
+                confirmBadge = '<span class="badge badge-orange">⚠ Pending Rep Confirmation</span>';
+            }
+            
+            return `
+                <div class="case-card">
+                    <div class="case-header">
+                        <div>
+                            <span class="case-id">${caseData.id}</span>
+                            ${statusBadge}
+                            ${confirmBadge}
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary btn-small" onclick="editCase('${caseData.id}')">
+                                ✏️ Edit
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="deleteCase('${caseData.id}')">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="case-title">${caseData.procedure}</div>
+                    <div class="case-location">📍 ${caseData.hospital} • ${caseData.room || 'TBD'}</div>
+                    
+                    <div class="case-times">
+                        <div class="time-item">
+                            <div class="time-label">Date</div>
+                            <div class="time-value">${formatDate(caseData.date)}</div>
+                        </div>
+                        <div class="time-item">
+                            <div class="time-label">Scheduled</div>
+                            <div class="time-value">${formatTime(caseData.scheduledTime)}</div>
+                        </div>
+                        <div class="time-item">
+                            <div class="time-label">Assigned Rep</div>
+                            <div class="time-value">${reps[caseData.assignedRep]}</div>
+                        </div>
+                        ${caseData.confirmed ? `
+                        <div class="time-item">
+                            <div class="time-label">Confirmed By</div>
+                            <div class="time-value" style="color: var(--success);">${caseData.confirmedBy}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    ${caseData.notes ? `
+                        <div style="margin-top: 12px; padding: 10px; background: rgba(184,134,11,0.08); border-radius: 8px; font-size: 14px;">
+                            <strong>Notes:</strong> ${caseData.notes}
+                        </div>
+                    ` : ''}
+                    
+                    ${caseData.confirmed ? `
+                        <div style="margin-top: 12px; padding: 10px; background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 8px; font-size: 13px; color: #059669;">
+                            ✓ Confirmed by ${caseData.confirmedBy} • ${formatConfirmTime(caseData.confirmedAt)}
+                        </div>
+                    ` : `
+                        <div style="margin-top: 12px; padding: 10px; background: rgba(249, 115, 22, 0.08); border: 1px solid rgba(249, 115, 22, 0.3); border-radius: 8px; font-size: 13px; color: #c2410c;">
+                            ⚠ Awaiting rep confirmation
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        function backToSchedulerList() {
+            selectedSurgeonId = null;
+            document.getElementById('schedulerSurgeonDetail').classList.add('hidden');
+            showSchedulerView();
+        }
+
+        function openScheduleCase(surgeonId) {
+            document.getElementById('caseEditId').value = '';
+            document.getElementById('caseSurgeonId').value = surgeonId;
+            document.getElementById('scheduleCaseForm').reset();
+            document.getElementById('scheduleCaseModal').classList.remove('hidden');
+        }
+
+        function editCase(caseId) {
+            const caseData = cases.find(c => c.id === caseId);
+            if (!caseData) return;
+            
+            document.getElementById('caseEditId').value = caseId;
+            document.getElementById('caseSurgeonId').value = caseData.surgeonId;
+            document.getElementById('caseProcedure').value = caseData.procedure;
+            document.getElementById('caseDate').value = caseData.date.toISOString().split('T')[0];
+            document.getElementById('caseTime').value = caseData.scheduledTime;
+            document.getElementById('caseHospital').value = caseData.hospital;
+            document.getElementById('caseRoom').value = caseData.room || '';
+            document.getElementById('caseRep').value = caseData.assignedRep;
+            document.getElementById('caseNotes').value = caseData.notes || '';
+            
+            document.getElementById('scheduleCaseModal').classList.remove('hidden');
+        }
+
+        function deleteCase(caseId) {
+            if (!confirm('Are you sure you want to delete this case? This action cannot be undone.')) return;
+            
+            const index = cases.findIndex(c => c.id === caseId);
+            if (index > -1) {
+                const caseData = cases[index];
+                const surgeonId = caseData.surgeonId;
+                
+                // Remove the case from the array
+                cases.splice(index, 1);
+                
+                // Refresh the current view
+                showSchedulerSurgeonDetail(surgeonId);
+                
+                // Show success notification
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success';
+                alert.style.cssText = 'position: fixed; top: 80px; right: 24px; z-index: 1000; animation: slideIn 0.5s ease-out;';
+                alert.innerHTML = '<span>✅</span><div>Case deleted successfully!</div>';
+                document.body.appendChild(alert);
+                
+                setTimeout(() => alert.remove(), 3000);
+            }
+        }
+
+        function submitCase(event) {
+            event.preventDefault();
+            
+            const editId = document.getElementById('caseEditId').value;
+            const surgeonId = parseInt(document.getElementById('caseSurgeonId').value);
+            const procedure = document.getElementById('caseProcedure').value;
+            const dateStr = document.getElementById('caseDate').value;
+            const time = document.getElementById('caseTime').value;
+            const hospital = document.getElementById('caseHospital').value;
+            const room = document.getElementById('caseRoom').value;
+            const assignedRep = document.getElementById('caseRep').value;
+            const notes = document.getElementById('caseNotes').value;
+            
+            if (editId) {
+                // Edit existing case
+                const caseData = cases.find(c => c.id === editId);
+                if (caseData) {
+                    caseData.procedure = procedure;
+                    caseData.date = new Date(dateStr);
+                    caseData.scheduledTime = time;
+                    caseData.hospital = hospital;
+                    caseData.room = room;
+                    caseData.assignedRep = assignedRep;
+                    caseData.notes = notes;
+                }
+            } else {
+                // Create new case
+                const newCase = {
+                    id: 'CASE-' + Math.floor(Math.random() * 9000 + 1000),
+                    surgeonId: surgeonId,
+                    procedure: procedure,
+                    date: new Date(dateStr),
+                    scheduledTime: time,
+                    timeIn: null,
+                    timeOut: null,
+                    hospital: hospital,
+                    room: room,
+                    notes: notes,
+                    assignedRep: assignedRep,
+                    status: 'scheduled',
+                    confirmed: false,
+                    confirmedAt: null,
+                    confirmedBy: null
+                };
+                
+                cases.push(newCase);
+            }
+            
+            closeModal('scheduleCaseModal');
+            showSchedulerSurgeonDetail(surgeonId);
+            
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success';
+            alert.style.cssText = 'position: fixed; top: 80px; right: 24px; z-index: 1000; animation: slideIn 0.5s ease-out;';
+            alert.innerHTML = `<span>✅</span><div>Case ${editId ? 'updated' : 'scheduled'} successfully! Rep has been notified.</div>`;
+            document.body.appendChild(alert);
+            
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        function openEditPreferences(surgeonId) {
+            const surgeon = surgeons.find(s => s.id === surgeonId);
+            if (!surgeon) return;
+            
+            document.getElementById('editPrefSurgeonName').textContent = `Edit Preferences - ${surgeon.name}`;
+            document.getElementById('prefSurgeonId').value = surgeonId;
+            document.getElementById('prefGeneral').value = surgeon.preferences.general;
+            document.getElementById('prefImplants').value = surgeon.preferences.implants;
+            document.getElementById('prefTechnique').value = surgeon.preferences.technique;
+            
+            document.getElementById('editPreferencesModal').classList.remove('hidden');
+        }
+
+        function savePreferences(event) {
+            event.preventDefault();
+            
+            const surgeonId = parseInt(document.getElementById('prefSurgeonId').value);
+            const surgeon = surgeons.find(s => s.id === surgeonId);
+            
+            if (surgeon) {
+                surgeon.preferences.general = document.getElementById('prefGeneral').value;
+                surgeon.preferences.implants = document.getElementById('prefImplants').value;
+                surgeon.preferences.technique = document.getElementById('prefTechnique').value;
+            }
+            
+            closeModal('editPreferencesModal');
+            showSchedulerSurgeonDetail(surgeonId);
+            
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success';
+            alert.style.cssText = 'position: fixed; top: 80px; right: 24px; z-index: 1000; animation: slideIn 0.5s ease-out;';
+            alert.innerHTML = '<span>✅</span><div>Preferences updated successfully!</div>';
+            document.body.appendChild(alert);
+            
+            setTimeout(() => alert.remove(), 3000);
+        }
+
+        // Modal management
+        function closeModal(modalId, event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Initialize
+        window.onload = function() {
+            document.getElementById('welcome').classList.remove('hidden');
+        };
+    </script>
+</body>
+</html>
