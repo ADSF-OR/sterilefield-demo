@@ -1,26 +1,92 @@
-# SterileField Demo
+# SterileField
 
-**Version:** Phase 1 MVP (January 2026)  
-**Status:** Production Demo Ready
+**Version:** 2.0.0 (Production Ready)
+**Status:** Deployable with Supabase + Vercel
 
 ---
 
 ## 🚀 Quick Start
 
-### Option 1: Local Use (Offline)
-1. Download `SterileField-Phase1-MVP.html`
-2. Double-click the file to open in your browser
-3. Choose **Rep View** or **Scheduler View**
-4. Explore the demo!
+### For Production Deployment (Recommended)
 
-### Option 2: GitHub Pages (Online Hosting)
-1. Upload `index.html` to your GitHub repository
-2. Enable GitHub Pages in repository settings
-3. Access at: `https://[username].github.io/[repo-name]/`
+**Full deployment with database and authentication:**
+
+1. **See [DEPLOYMENT.md](./DEPLOYMENT.md)** for complete deployment instructions
+2. Deploy backend to Supabase (database)
+3. Deploy frontend to Vercel (hosting)
+4. Configure environment variables
+5. You're live! 🎉
+
+### For Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.local.example .env.local
+# Edit .env.local with your Supabase credentials
+
+# Run local development server
+npm run preview
+```
+
+### Legacy Demo (Offline, No Database)
+
+The original single-file demo is preserved as `index.html` in the root directory.
+- Double-click to open in browser
+- No installation needed
+- Data resets on page refresh
 
 ---
 
-## 📋 Demo Features
+## 🏗️ Architecture
+
+**Version 2.0** is a complete rewrite with modern architecture:
+
+### Tech Stack
+
+- **Frontend:** Vanilla JavaScript (ES6 Modules), HTML5, CSS3
+- **Backend:** Supabase (PostgreSQL database)
+- **Authentication:** Supabase Auth
+- **Hosting:** Vercel
+- **Real-time:** Supabase Realtime subscriptions
+
+### Project Structure
+
+```
+sterilefield-demo/
+├── public/              # Static assets
+│   ├── index.html      # Main HTML (no inline code)
+│   └── styles.css      # Extracted CSS
+├── src/
+│   ├── js/
+│   │   ├── config.js       # App configuration
+│   │   ├── database.js     # Supabase operations
+│   │   ├── auth.js         # Authentication
+│   │   └── app.js          # Main app logic
+│   └── utils/
+│       └── helpers.js      # Helper functions
+├── supabase/
+│   └── migrations/         # Database schema
+├── package.json            # Dependencies
+├── vercel.json            # Deployment config
+└── DEPLOYMENT.md          # Deployment guide
+```
+
+### Key Improvements from v1.0
+
+✅ **Database persistence** - Data saved to Supabase PostgreSQL
+✅ **User authentication** - Role-based access control (Rep vs Scheduler)
+✅ **Real-time updates** - Live data synchronization
+✅ **Modular code** - Separated concerns (HTML/CSS/JS)
+✅ **Production-ready** - Proper error handling, security, scalability
+✅ **Row-level security** - Database-level access control
+✅ **API-driven** - RESTful operations via Supabase
+
+---
+
+## 📋 Features
 
 ### Rep View (Blue Mode)
 - **Surgeons Tab**: View surgeon preferences and cases (expandable)

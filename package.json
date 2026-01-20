@@ -1,0 +1,30 @@
+{
+  "name": "sterilefield-demo",
+  "version": "2.0.0",
+  "description": "Medical device case tracking for seamless coordination between reps and schedulers",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site - no build needed'",
+    "preview": "python3 -m http.server 8000 --directory public",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "medical",
+    "case-tracking",
+    "surgical",
+    "coordination"
+  ],
+  "author": "SterileField Team",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
