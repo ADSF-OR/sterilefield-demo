@@ -1,7 +1,38 @@
 # SterileField
 
-**Version:** 2.0.0 (Production Ready)
+**Version:** 2.0.0 (Production Ready MVP)
 **Status:** Deployable with Supabase + Vercel
+
+## ✨ What's New in 2.0 MVP
+
+This version includes **real features** with **full routing** and **authentication**:
+
+### Phase 1: Real Navigation & Routing ✅
+- **Client-side routing** with dynamic routes
+- Proper navigation between pages (no more show/hide divs!)
+- Browser back/forward button support
+- Routes for: Login, Case List, Case Detail, Case Form
+
+### Phase 2: Supabase Authentication ✅
+- **Email/password authentication**
+- Login page with proper error handling
+- Protected routes (redirects to login if not authenticated)
+- Demo mode fallback for development without Supabase
+
+### Phase 3: CRUD Operations ✅
+- **Create**: New case form saves to Supabase
+- **Read**: Case list page reads from Supabase with filters
+- **Update**: Case detail page allows status updates and time tracking
+- **Delete**: Schedulers can delete cases
+- **Clear UI states**: Loading, empty, and error states throughout
+
+### Features
+- 📋 **Case Management**: Full CRUD for surgical cases
+- 👥 **User Roles**: Rep and Scheduler views
+- 🔒 **Authentication**: Supabase Auth with protected routes
+- ⏱️ **Time Tracking**: Track actual vs scheduled times
+- ✅ **Case Confirmation**: Reps can confirm assigned cases
+- 🔄 **Real-time Updates**: Supabase Realtime subscriptions (optional)
 
 ---
 

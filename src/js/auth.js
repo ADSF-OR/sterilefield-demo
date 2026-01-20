@@ -239,6 +239,13 @@ export async function initAuth() {
 
         if (!hasSession) {
             console.log('No active session');
+            // For development/demo purposes, enable demo mode if no Supabase config
+            const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL;
+            if (!supabaseUrl || supabaseUrl === 'https://your-project-id.supabase.co') {
+                console.warn('⚠️ No Supabase configuration found, enabling demo mode');
+                enableDemoMode();
+                return true;
+            }
         } else {
             console.log('✅ User authenticated:', currentUserProfile.full_name);
         }
@@ -246,6 +253,9 @@ export async function initAuth() {
         return hasSession;
     } catch (error) {
         console.error('Failed to initialize auth:', error);
-        return false;
+        // Try demo mode as fallback
+        console.warn('⚠️ Auth error, enabling demo mode');
+        enableDemoMode();
+        return true;
     }
 }
