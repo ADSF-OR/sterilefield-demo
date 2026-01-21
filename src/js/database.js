@@ -226,7 +226,7 @@ export async function createCase(caseData) {
             hospital_id: caseData.hospital_id,
             surgeon_id: caseData.surgeon_id,
             notes: caseData.notes || null,
-            status: caseData.status || 'pending'
+            status: caseData.status || 'PENDING'
         }])
         .select(`
             *,
@@ -268,7 +268,7 @@ export async function confirmCase(id, confirmedBy = 'Rep') {
     const { data, error} = await supabase
         .from('cases')
         .update({
-            status: 'confirmed',
+            status: 'CONFIRMED',
             confirmed_at: new Date().toISOString(),
             confirmed_by: confirmedBy
         })
@@ -321,7 +321,7 @@ export async function getUpcomingCases(days = 7) {
 export async function getDashboardStats() {
     try {
         const [allCases, upcomingCases] = await Promise.all([
-            getCases({ status: 'scheduled' }),
+            getCases({ status: 'CONFIRMED' }),
             getUpcomingCases(7)
         ]);
 

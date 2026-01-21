@@ -36,10 +36,10 @@ export async function renderSchedulerHomePage() {
 
         cases.forEach(c => {
             if (c.surgeon_id && new Date(c.case_datetime) >= now) {
-                if (c.status === 'pending') {
+                if (c.status === 'PENDING') {
                     caseCounts[c.surgeon_id] = (caseCounts[c.surgeon_id] || 0) + 1;
                     pendingCounts[c.surgeon_id] = (pendingCounts[c.surgeon_id] || 0) + 1;
-                } else if (c.status === 'confirmed') {
+                } else if (c.status === 'CONFIRMED') {
                     caseCounts[c.surgeon_id] = (caseCounts[c.surgeon_id] || 0) + 1;
                     confirmedCounts[c.surgeon_id] = (confirmedCounts[c.surgeon_id] || 0) + 1;
                 }

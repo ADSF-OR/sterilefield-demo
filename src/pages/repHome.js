@@ -28,10 +28,10 @@ export async function renderRepHomePage() {
             getSurgeons()
         ]);
 
-        // Filter upcoming cases (pending and confirmed)
+        // Filter upcoming cases (PENDING and CONFIRMED)
         const now = new Date();
         const upcomingCases = cases
-            .filter(c => new Date(c.case_datetime) >= now && (c.status === 'pending' || c.status === 'confirmed'))
+            .filter(c => new Date(c.case_datetime) >= now && (c.status === 'PENDING' || c.status === 'CONFIRMED'))
             .sort((a, b) => new Date(a.case_datetime) - new Date(b.case_datetime))
             .slice(0, 10); // Show next 10 cases
 
@@ -59,26 +59,25 @@ export async function renderRepHomePage() {
                     ` : `
                         <div style="display: grid; gap: 12px;">
                             ${upcomingCases.map(c => {
-                                const isPending = c.status === 'pending';
+                                const isPending = c.status === 'PENDING';
                                 const statusColor = isPending ? '#f59e0b' : '#10b981';
-                                const statusLabel = isPending ? '⏳ Pending' : '✅ Confirmed';
-                                const borderColor = isPending ? '1px solid #f59e0b' : '1px solid #e5e7eb';
+                                const statusLabel = isPending ? 'Pending' : 'Confirmed';
 
                                 return `
                                     <div
                                         class="case-item"
-                                        style="padding: 16px; border: ${borderColor}; border-radius: 8px; cursor: pointer; transition: all 0.2s;"
+                                        style="padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;"
                                         onclick="window.navigateTo('/rep/cases/${c.id}')"
                                         onmouseover="this.style.borderColor='var(--gold)'; this.style.backgroundColor='rgba(184, 134, 11, 0.05)';"
-                                        onmouseout="this.style.borderColor='${isPending ? '#f59e0b' : '#e5e7eb'}'; this.style.backgroundColor='white';"
+                                        onmouseout="this.style.borderColor='#e5e7eb'; this.style.backgroundColor='white';"
                                     >
                                         <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 12px;">
                                             <div style="flex: 1; min-width: 200px;">
-                                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                                     <div style="font-weight: 700; color: var(--forest); font-size: 16px;">
                                                         ${c.procedure}
                                                     </div>
-                                                    <span style="background: ${statusColor}; color: white; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; white-space: nowrap;">
+                                                    <span class="badge" style="background: ${statusColor}; color: white; font-size: 11px;">
                                                         ${statusLabel}
                                                     </span>
                                                 </div>

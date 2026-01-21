@@ -28,10 +28,10 @@ export async function renderCaseDetailPage(caseId, mode = 'rep') {
     try {
         const caseData = await getCase(caseId);
 
-        const statusBadge = caseData.status === 'completed' ? 'green' :
-                           caseData.status === 'canceled' ? 'danger' :
-                           caseData.status === 'pending' ? 'warning' :
-                           caseData.status === 'confirmed' ? 'success' : 'gray';
+        const statusBadge = caseData.status === 'COMPLETED' ? 'green' :
+                           caseData.status === 'CANCELLED' ? 'danger' :
+                           caseData.status === 'PENDING' ? 'warning' :
+                           caseData.status === 'CONFIRMED' ? 'success' : 'gray';
 
         container.innerHTML = `
             <div class="content">
@@ -96,7 +96,7 @@ export async function renderCaseDetailPage(caseId, mode = 'rep') {
                             </div>
                         ` : ''}
 
-                        ${caseData.status === 'confirmed' && caseData.confirmed_by && caseData.confirmed_at ? `
+                        ${caseData.status === 'CONFIRMED' && caseData.confirmed_by && caseData.confirmed_at ? `
                             <div style="background: rgba(16, 185, 129, 0.08); border-left: 4px solid #10b981; padding: 16px; border-radius: 8px; margin-top: 12px;">
                                 <div style="font-size: 12px; font-weight: 700; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">✓ Confirmation Details</div>
                                 <div style="color: var(--slate); line-height: 1.6;">
