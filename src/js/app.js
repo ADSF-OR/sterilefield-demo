@@ -69,11 +69,18 @@ function defineRoutes() {
         await renderCaseFormPage();
     }, { requiresAuth: false });
 
-    // Case detail and edit
+    // Case detail
     defineRoute('/cases/:id', async (params) => {
         hideAllPages();
         showPage('caseDetailPage');
         await renderCaseDetailPage(params.id);
+    }, { requiresAuth: false });
+
+    // Edit case
+    defineRoute('/cases/:id/edit', async (params) => {
+        hideAllPages();
+        showPage('caseFormPage');
+        await renderCaseFormPage(params.id);
     }, { requiresAuth: false });
 
     // Hospitals management

@@ -164,8 +164,7 @@
 ## Known Issues / Future Improvements
 
 ### Known Issues (Non-Blocking)
-1. Edit button in case detail uses dynamic import - works but shows console warning
-2. No auto-refresh after adding surgeon/hospital inline (page needs manual reload)
+None - all known issues have been resolved!
 
 ### Future Enhancements (Not in MVP)
 - User authentication (removed for MVP simplicity)

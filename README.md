@@ -1,329 +1,339 @@
-# SterileField
+# SterileField MVP
 
-**Version:** 2.0.0 (Production Ready MVP)
-**Status:** Deployable with Supabase + Vercel
+> **Simple surgical case tracking** - Manage hospitals, surgeons, and cases with real-time database persistence.
 
-## ✨ What's New in 2.0 MVP
+**Version:** 1.0.0 (MVP)
+**Status:** ✅ Production Ready
+**Last Updated:** January 21, 2026
 
-This version includes **real features** with **full routing** and **authentication**:
+---
 
-### Phase 1: Real Navigation & Routing ✅
-- **Client-side routing** with dynamic routes
-- Proper navigation between pages (no more show/hide divs!)
-- Browser back/forward button support
-- Routes for: Login, Case List, Case Detail, Case Form
+## 🎯 What is SterileField?
 
-### Phase 2: Supabase Authentication ✅
-- **Email/password authentication**
-- Login page with proper error handling
-- Protected routes (redirects to login if not authenticated)
-- Demo mode fallback for development without Supabase
+SterileField is a **surgical case scheduling and tracking application** designed to help coordinate surgical cases across hospitals and surgeons. This MVP focuses on core functionality with a clean, simple interface.
 
-### Phase 3: CRUD Operations ✅
-- **Create**: New case form saves to Supabase
-- **Read**: Case list page reads from Supabase with filters
-- **Update**: Case detail page allows status updates and time tracking
-- **Delete**: Schedulers can delete cases
-- **Clear UI states**: Loading, empty, and error states throughout
+### Key Features
 
-### Features
-- 📋 **Case Management**: Full CRUD for surgical cases
-- 👥 **User Roles**: Rep and Scheduler views
-- 🔒 **Authentication**: Supabase Auth with protected routes
-- ⏱️ **Time Tracking**: Track actual vs scheduled times
-- ✅ **Case Confirmation**: Reps can confirm assigned cases
-- 🔄 **Real-time Updates**: Supabase Realtime subscriptions (optional)
+- 📅 **Schedule Management** - View and filter cases by date range, surgeon, or hospital
+- 🏥 **Hospital Tracking** - Manage hospital locations
+- 👨‍⚕️ **Surgeon Directory** - Track surgeons and their specialties
+- ✏️ **Full CRUD Operations** - Create, read, update, and delete cases
+- 📊 **Dashboard Overview** - See case statistics at a glance
+- 🔄 **Real-time Database** - All changes persist to Supabase PostgreSQL
+- 📱 **Mobile Responsive** - Works on desktop, tablet, and mobile
 
 ---
 
 ## 🚀 Quick Start
 
-### For Production Deployment (Recommended)
+### Option 1: Production Deployment (Recommended)
 
-**Full deployment with database and authentication:**
+Deploy to Vercel + Supabase in minutes:
 
-1. **See [DEPLOYMENT.md](./DEPLOYMENT.md)** for complete deployment instructions
-2. Deploy backend to Supabase (database)
-3. Deploy frontend to Vercel (hosting)
-4. Configure environment variables
-5. You're live! 🎉
+1. **Read the full deployment guide:** [DEPLOYMENT.md](./DEPLOYMENT.md)
+2. **Set up Supabase** (database)
+3. **Deploy to Vercel** (hosting)
+4. **Configure environment variables**
+5. **Run the migration** to create tables
 
-### For Local Development
+**That's it!** Your app is live.
+
+### Option 2: Local Development
 
 ```bash
-# Install dependencies
+# 1. Clone the repository
+git clone <repository-url>
+cd sterilefield-demo
+
+# 2. Install dependencies
 npm install
 
-# Set up environment variables
+# 3. Set up environment variables
 cp .env.local.example .env.local
-# Edit .env.local with your Supabase credentials
+# Edit .env.local and add your Supabase credentials
 
-# Run local development server
-npm run preview
+# 4. Start development server
+npm run dev
+
+# 5. Open in browser
+# Visit http://localhost:5173
 ```
-
-### Legacy Demo (Offline, No Database)
-
-The original single-file demo is preserved as `index.html` in the root directory.
-- Double-click to open in browser
-- No installation needed
-- Data resets on page refresh
 
 ---
 
 ## 🏗️ Architecture
 
-**Version 2.0** is a complete rewrite with modern architecture:
-
 ### Tech Stack
 
-- **Frontend:** Vanilla JavaScript (ES6 Modules), HTML5, CSS3
-- **Backend:** Supabase (PostgreSQL database)
-- **Authentication:** Supabase Auth
-- **Hosting:** Vercel
-- **Real-time:** Supabase Realtime subscriptions
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Vanilla JavaScript (ES6 Modules) |
+| **Styling** | CSS3 with custom properties |
+| **Database** | Supabase (PostgreSQL) |
+| **Hosting** | Vercel |
+| **Build Tool** | Vite |
 
 ### Project Structure
 
 ```
 sterilefield-demo/
-├── public/              # Static assets
-│   ├── index.html      # Main HTML (no inline code)
-│   └── styles.css      # Extracted CSS
+├── index.html              # Main entry point
+├── public/
+│   └── styles.css         # Global styles
 ├── src/
 │   ├── js/
-│   │   ├── config.js       # App configuration
-│   │   ├── database.js     # Supabase operations
-│   │   ├── auth.js         # Authentication
-│   │   └── app.js          # Main app logic
+│   │   ├── app.js         # App initialization & routing
+│   │   ├── router.js      # Client-side router
+│   │   ├── database.js    # Supabase operations
+│   │   └── config.js      # App configuration
+│   ├── pages/
+│   │   ├── home.js        # Dashboard page
+│   │   ├── schedule.js    # Schedule view with filters
+│   │   ├── caseForm.js    # Create/edit case form
+│   │   ├── caseDetail.js  # Case detail view
+│   │   ├── hospitals.js   # Hospital management
+│   │   └── surgeons.js    # Surgeon management
 │   └── utils/
-│       └── helpers.js      # Helper functions
+│       └── helpers.js     # Helper functions
 ├── supabase/
-│   └── migrations/         # Database schema
-├── package.json            # Dependencies
-├── vercel.json            # Deployment config
-└── DEPLOYMENT.md          # Deployment guide
-```
+│   └── migrations/
+│       └── 20240101000000_create_mvp_schema.sql  # Database schema
+├── DEPLOYMENT.md          # Deployment guide
+├── SECURITY.md           # Security documentation
+├── QA.md                 # Quality assurance checklist
+└── package.json          # Dependencies
 
-### Key Improvements from v1.0
-
-✅ **Database persistence** - Data saved to Supabase PostgreSQL
-✅ **User authentication** - Role-based access control (Rep vs Scheduler)
-✅ **Real-time updates** - Live data synchronization
-✅ **Modular code** - Separated concerns (HTML/CSS/JS)
-✅ **Production-ready** - Proper error handling, security, scalability
-✅ **Row-level security** - Database-level access control
-✅ **API-driven** - RESTful operations via Supabase
-
----
-
-## 📋 Features
-
-### Rep View (Blue Mode)
-- **Surgeons Tab**: View surgeon preferences and cases (expandable)
-- **Cases Tab**: Chronological case list with filters
-  - Today's cases
-  - All cases
-  - My assigned cases
-  - Unconfirmed cases
-- **Territory Tab**: Hospital directory
-- **Case Confirmation**: Confirm scheduled cases
-- **Time Tracking**: Record Time In and Time Out
-- **Notification Badge**: Shows unconfirmed case count
-
-### Scheduler View (Orange Mode)
-- **Surgeon Management**: Schedule and manage cases
-- **Case Scheduling**: Create new surgical cases
-- **Rep Assignment**: Assign cases to reps
-- **Confirmation Tracking**: See which cases have been confirmed by reps
-- **Full CRUD**: Create, Read, Update, Delete cases
-
----
-
-## 🎯 Demo Flow for Presentations
-
-**Suggested 3-Minute Demo Script:**
-
-1. **Start in Scheduler View** (30 sec)
-   - Show surgeon list
-   - Click a surgeon to see their profile
-   - Schedule a new case → "Pending Rep Confirmation" badge appears
-
-2. **Switch to Rep View** (60 sec)
-   - Show notification badge on Cases tab
-   - Open Cases tab → see "Today" view
-   - Click surgeon in Surgeons tab → expand to see preferences
-   - Expand cases → show "Awaiting Confirmation" badge
-   - Click **"✓ Confirm"** button
-
-3. **Back to Scheduler View** (30 sec)
-   - Show "✓ Rep Confirmed" status
-   - Point out confirmation timestamp
-
-4. **Back to Rep View - Time Tracking** (60 sec)
-   - Click **"⏱️ Times"** button
-   - Enter Time In and Time Out
-   - Show delay calculation
-   - Status changes to "In Progress" → "Completed"
-
----
-
-## 🎨 Key Visual Elements
-
-- **Forest Green + Gold** color scheme (medical/professional)
-- **Role-specific badges**: Blue for Rep, Orange for Scheduler
-- **Status indicators**: Gray (Scheduled), Blue (In Progress), Green (Completed)
-- **Confirmation badges**: Orange warning → Green confirmed
-- **Mobile-responsive** bottom navigation
-
----
-
-## 📊 Demo Data Included
-
-- **4 Surgeons** (Spine, Neurosurgery, Ortho)
-- **4 Sample Cases** (various stages: scheduled, in-progress, completed)
-- **3 Reps** (John Smith, Sarah Johnson, Michael Chen)
-- **6 Hospitals** (South Jersey territory)
-
----
-
-## 💾 File Information
-
-- **File Type**: Single HTML file (no dependencies)
-- **File Size**: ~98KB
-- **Requirements**: Any modern web browser
-- **Internet**: NOT required (fully offline capable)
-- **Mobile**: Fully responsive design
-
----
-
-## 🔄 Version History
-
-### v3.0 - January 2026 (Current)
-- ✅ Added case confirmation workflow
-- ✅ Added notification badge for unconfirmed cases
-- ✅ Added "Today" filter in Cases tab
-- ✅ Improved visual hierarchy (larger procedure names, prominent times)
-- ✅ Enhanced empty states with helpful messages
-- ✅ Stronger visual divide between Rep/Scheduler views
-- ✅ 4-tab navigation in Rep View
-
-### v2.0 - January 2026
-- Simplified navigation (removed layered pages)
-- Combined Surgeons + Cases into expandable sections
-- Added Territory tab
-
-### v1.0 - January 2026
-- Initial MVP release
-- Basic Rep and Scheduler views
-
----
-
-## 🛠️ Technical Details
-
-**Architecture**: Single-page application (SPA)  
-**Framework**: Vanilla JavaScript (no dependencies)  
-**Data**: In-memory (demo purposes only)  
-**Styling**: Embedded CSS with CSS variables  
-**State Management**: JavaScript objects  
-
-**No backend required** - this is a frontend-only demo
-
----
-
-## 📱 Sharing Instructions
-
-### Email Template:
-```
-Subject: SterileField Demo - Surgical Case Coordination
-
-Hi [Name],
-
-Please find attached the SterileField demo. To view:
-1. Download the HTML file
-2. Double-click to open in your browser
-3. Try both Rep View and Scheduler View
-
-The demo works completely offline - no installation needed!
-
-Key features to explore:
-• Case confirmation workflow
-• Real-time time tracking
-• Surgeon preference management
-• Hospital territory view
-
-Let me know your thoughts!
-```
-
-### Link Sharing (if hosted):
-```
-🔗 Live Demo: [your-github-pages-url]
-
-Try both views to see the complete workflow!
 ```
 
 ---
 
-## 🎓 User Guide
+## 📋 Features Overview
 
-### For Reps:
-1. Start in **Rep View**
-2. Check **Cases tab** for today's schedule
-3. View notification badge for unconfirmed cases
-4. Click **Surgeons tab** to see preferences
-5. **Confirm cases** you've reviewed
-6. **Track times** during procedures
+### Dashboard (Home Page)
 
-### For Schedulers:
-1. Start in **Scheduler View**
-2. Click a surgeon to manage their cases
-3. Click **"Schedule New Case"**
-4. Fill in case details and assign a rep
-5. View confirmation status for all cases
-6. Edit or delete cases as needed
+- **Case Statistics** - Total, completed, and upcoming cases
+- **Quick Actions** - Schedule new case, view schedule, manage hospitals/surgeons
+- **At-a-Glance Metrics** - See what's happening today
+
+### Schedule Page
+
+Advanced filtering and viewing:
+
+- **Filter by Date Range** - Today, This Week, This Month, All Upcoming, or custom date range
+- **Filter by Surgeon** - See cases for specific surgeons
+- **Filter by Hospital** - See cases at specific hospitals
+- **Status Badges** - Visual indicators for scheduled, completed, and canceled cases
+- **Quick Actions** - Edit or view details for any case
+
+### Case Management
+
+Complete CRUD operations:
+
+- **Create Cases** - Schedule new surgical cases with inline surgeon/hospital creation
+- **View Details** - See full case information
+- **Edit Cases** - Update procedure, date/time, surgeon, hospital, notes, or status
+- **Delete Cases** - Remove cases with confirmation
+- **Status Tracking** - Mark cases as scheduled, completed, or canceled
+
+### Hospital & Surgeon Management
+
+Simple reference data management:
+
+- **Add Hospitals** - Track hospital locations
+- **Add Surgeons** - Manage surgeon directory
+- **View Lists** - See all hospitals and surgeons
+- **Inline Creation** - Add new hospitals/surgeons directly from case form
 
 ---
 
-## ⚠️ Important Notes
+## 💾 Database Schema
 
-- **Demo Data**: All data resets on page refresh
-- **No PHI**: This demo uses case codes only (HIPAA-friendly design)
-- **No Authentication**: For demo purposes, no login required
-- **Browser Compatibility**: Works on Chrome, Safari, Firefox, Edge (modern versions)
+The application uses a simple 3-table schema:
+
+### Tables
+
+1. **hospitals** - Hospital locations
+   - `id` (UUID, primary key)
+   - `name` (text, unique)
+   - `created_at` (timestamp)
+
+2. **surgeons** - Surgeon directory
+   - `id` (UUID, primary key)
+   - `name` (text, unique)
+   - `created_at` (timestamp)
+
+3. **cases** - Surgical cases
+   - `id` (UUID, primary key)
+   - `case_datetime` (timestamp)
+   - `procedure` (text)
+   - `hospital_id` (UUID, foreign key)
+   - `surgeon_id` (UUID, foreign key)
+   - `notes` (text, optional)
+   - `status` (text: 'scheduled', 'completed', 'canceled')
+   - `created_at` (timestamp)
+
+### Security
+
+- ✅ **Row Level Security (RLS) enabled** on all tables
+- ⚠️ **Public access policies** for MVP (see [SECURITY.md](./SECURITY.md))
+- 🔐 **Production security recommendations** documented
 
 ---
 
-## 🆘 Troubleshooting
+## 🎨 Design System
 
-**Demo won't open?**
-- Make sure file extension is `.html`
-- Try right-click → "Open with" → Choose your browser
-- Check that JavaScript is enabled in browser
+### Color Palette
 
-**Changes not saving?**
-- This is expected - demo resets on refresh
-- Production version would have backend database
+```css
+--forest: #1b4332      /* Primary brand color */
+--forest-light: #2d6a4f
+--gold: #b8860b        /* Accent color */
+--slate: #344e41       /* Text color */
+--gray: #9ca3af        /* Secondary text */
+--success: #10b981     /* Success states */
+--danger: #ef4444      /* Error states */
+```
 
-**Looks broken on mobile?**
-- Use portrait orientation for best experience
-- Tap on expandable sections to reveal content
+### Key Design Principles
+
+- **Clean & Professional** - Medical-grade interface
+- **Mobile-First** - Responsive design for all devices
+- **Accessibility** - High contrast, readable fonts
+- **Consistent** - Reusable components and patterns
+
+---
+
+## 📊 Demo Data
+
+The migration includes sample data to get you started:
+
+- **3 Hospitals** - Memorial Hospital, St. Mary's Medical Center, Regional Surgery Center
+- **3 Surgeons** - Dr. Jennifer Smith, Dr. Michael Chen, Dr. Sarah Johnson
+- **1 Sample Case** - Total Hip Replacement scheduled 2 days from now
+
+You can delete this data or use it for testing.
+
+---
+
+## 🔒 Security Considerations
+
+### Current Configuration (MVP)
+
+- **No Authentication** - Public access to all data
+- **RLS Enabled** - But policies allow public read/write
+- **Appropriate for MVP** - No PHI/PII stored, private deployment
+
+See [SECURITY.md](./SECURITY.md) for:
+- Why public access is acceptable for MVP
+- Production security recommendations
+- Step-by-step hardening guide
+
+---
+
+## 🧪 Testing
+
+A comprehensive QA checklist is provided in [QA.md](./QA.md):
+
+- ✅ **100+ test cases** covering all features
+- 📋 **Manual testing guide** for each page
+- 🐛 **Known issues tracker** (currently none!)
+- ✨ **Future enhancement ideas**
+
+---
+
+## 📚 Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [README.md](./README.md) | You are here - Overview and quick start |
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | Step-by-step deployment guide |
+| [SECURITY.md](./SECURITY.md) | Security policies and recommendations |
+| [QA.md](./QA.md) | Quality assurance testing checklist |
+
+---
+
+## 🛣️ Roadmap & Future Enhancements
+
+**Not in MVP, but planned:**
+
+- 🔐 **User Authentication** - Role-based access control
+- 👥 **User Management** - Rep and scheduler accounts
+- 📧 **Email Notifications** - Case reminders and confirmations
+- 🔔 **Real-time Updates** - Live sync via Supabase Realtime
+- 📱 **Push Notifications** - Mobile alerts for case changes
+- 📊 **Analytics Dashboard** - Reports and metrics
+- 🔍 **Advanced Search** - Full-text search across all data
+- 📅 **Calendar View** - Visual scheduling interface
+- 📎 **File Attachments** - Upload case-related documents
+- ⏱️ **Time Tracking** - Track actual procedure durations
+
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**"Configuration Error" on startup**
+- Make sure `.env.local` exists with valid Supabase credentials
+- Check that `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set
+- Restart the dev server after changing environment variables
+
+**Database connection errors**
+- Verify Supabase project is active (not paused)
+- Check that RLS policies are created (run the migration)
+- Ensure anon key has correct permissions
+
+**Page not found (404)**
+- Check that Vercel is configured to redirect all routes to `/index.html`
+- Verify `vercel.json` has the correct rewrite rules
+
+**Changes not persisting**
+- Open browser console to check for database errors
+- Verify Supabase URL and anon key are correct
+- Check network tab for failed API requests
+
+---
+
+## 🤝 Contributing
+
+This is an MVP. Contributions are welcome!
+
+**Areas needing improvement:**
+- Add unit tests (currently none)
+- Improve error handling
+- Add loading skeletons
+- Implement optimistic UI updates
+- Add keyboard shortcuts
+- Improve accessibility (ARIA labels, keyboard navigation)
 
 ---
 
 ## 📞 Support
 
-For questions about this demo or the SterileField platform:
-- **Demo Version**: Phase 1 MVP
-- **Last Updated**: January 20, 2026
+For questions or issues:
+
+1. Check the [QA.md](./QA.md) for known issues
+2. Review [DEPLOYMENT.md](./DEPLOYMENT.md) for deployment help
+3. Check [SECURITY.md](./SECURITY.md) for security questions
+4. Open a GitHub issue for bugs or feature requests
 
 ---
 
-## 🔐 License & Usage
+## 📄 License
 
-This is a demonstration/prototype. All rights reserved.
+This project is a demonstration/prototype. All rights reserved.
 
-**For demo/presentation purposes only.**
+**For demonstration and evaluation purposes.**
 
 ---
 
-Made with ❤️ for better surgical coordination
+## 🙏 Acknowledgments
+
+Built with:
+- [Supabase](https://supabase.com) - Database and authentication
+- [Vercel](https://vercel.com) - Hosting and deployment
+- [Vite](https://vitejs.dev) - Build tool and dev server
+
+---
+
+**Made for better surgical coordination** 🏥✨

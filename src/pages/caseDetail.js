@@ -85,14 +85,9 @@ export async function renderCaseDetailPage(caseId) {
             </div>
         `;
 
-        // Add event listeners - use the correct function to navigate to edit mode
+        // Add event listeners
         document.getElementById('editBtn')?.addEventListener('click', () => {
-            // Edit by reusing the case form page with the case ID
-            navigateTo(`/cases/new?edit=${caseId}`);
-            // Better: Since our router uses dynamic routes, let's navigate properly
-            window.location.href = `/cases/new`;  // Will need to pass case ID another way
-            // Actually, let's just reload the form with the ID
-            renderCaseFormPageEdit(caseId);
+            navigateTo(`/cases/${caseId}/edit`);
         });
 
         document.getElementById('deleteBtn')?.addEventListener('click', handleDelete);
@@ -127,13 +122,4 @@ async function handleDelete() {
         handleError(error, 'handleDelete');
         showNotification('Failed to delete case: ' + error.message, 'error');
     }
-}
-
-// Helper to edit - for now, just navigate to case form
-function renderCaseFormPageEdit(caseId) {
-    // This will be handled by the route system
-    // Just navigate to the form in edit mode
-    import('./caseForm.js').then(module => {
-        module.renderCaseFormPage(caseId);
-    });
 }
