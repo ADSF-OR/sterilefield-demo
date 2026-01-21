@@ -3,12 +3,13 @@
  * Shows surgeon information and their cases
  */
 
-import { getSurgeons, getCases, deleteSurgeon } from '../js/database.js';
+import { getSurgeons, getCases, deleteSurgeon, updateSurgeonPreferences } from '../js/database.js';
 import { navigateTo } from '../js/router.js';
 import { formatDate, formatTime, handleError, showNotification } from '../utils/helpers.js';
 
 let currentSurgeonId = null;
 let currentMode = null; // 'rep' or 'scheduler'
+let editingPreference = null; // Track which preference is being edited
 
 export async function renderSurgeonDetailPage(surgeonId, mode = 'rep') {
     currentSurgeonId = surgeonId;
@@ -94,6 +95,21 @@ export async function renderSurgeonDetailPage(surgeonId, mode = 'rep') {
                         </div>
                     </div>
                 </div>
+
+                <!-- Surgeon Preferences (Rep View Only) -->
+                ${mode === 'rep' ? `
+                    <div style="background: white; border-radius: 12px; border: 2px solid var(--gold); padding: 24px; margin-bottom: 24px;">
+                        <h2 style="font-size: 20px; color: var(--forest); margin-bottom: 20px; font-weight: 700;">
+                            📝 Surgeon Preferences
+                        </h2>
+
+                        <div style="display: grid; gap: 20px;">
+                            ${renderPreferenceSection(surgeon, 'general', surgeon.general_preferences)}
+                            ${renderPreferenceSection(surgeon, 'implant', surgeon.implant_preferences)}
+                            ${renderPreferenceSection(surgeon, 'technique', surgeon.technique_notes)}
+                        </div>
+                    </div>
+                ` : ''}
 
                 <!-- Upcoming Cases -->
                 <div style="background: white; border-radius: 12px; border: 2px solid var(--gold); padding: 24px; margin-bottom: 24px;">
@@ -218,3 +234,186 @@ export async function renderSurgeonDetailPage(surgeonId, mode = 'rep') {
         `;
     }
 }
+
+// Helper function to render a preference section
+function renderPreferenceSection(surgeon, type, value) {
+    const fieldMap = {
+        general: 'general_preferences',
+        implant: 'implant_preferences',
+        technique: 'technique_notes'
+    };
+
+    const titleMap = {
+        general: 'General Preferences',
+        implant: 'Implant Preferences',
+        technique: 'Technique Notes'
+    };
+
+    const isEditing = editingPreference === type;
+    const hasValue = value && value.trim();
+
+    return `
+        <div class="pref-section" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: ${hasValue || isEditing ? '12px' : '0'};">
+                <div>
+                    <h4 style="font-size: 16px; font-weight: 700; color: var(--forest); margin-bottom: 4px;">
+                        ${titleMap[type]}
+                    </h4>
+                    ${hasValue ? `
+                        <span class="badge badge-success" style="font-size: 11px;">✅ Complete</span>
+                    ` : `
+                        <span class="badge badge-warning" style="font-size: 11px;">⚠️ Empty</span>
+                    `}
+                </div>
+                ${surgeon.preferences_last_updated && hasValue && !isEditing ? `
+                    <div style="font-size: 12px; color: var(--gray-light);">
+                        Updated ${getRelativeTime(surgeon.preferences_last_updated)}
+                    </div>
+                ` : ''}
+            </div>
+
+            ${isEditing ? `
+                <div id="pref-edit-${type}">
+                    <textarea
+                        class="form-textarea"
+                        id="pref-textarea-${type}"
+                        placeholder="Enter ${titleMap[type].toLowerCase()}..."
+                        rows="4"
+                        maxlength="500"
+                        style="width: 100%; margin-bottom: 12px;"
+                    >${value || ''}</textarea>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-size: 12px; color: var(--gray);">
+                            <span id="char-count-${type}">0</span>/500
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button
+                                class="btn btn-secondary"
+                                onclick="handleCancelPreference('${type}')"
+                                style="font-size: 14px; padding: 8px 16px;"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                class="btn btn-primary"
+                                id="save-btn-${type}"
+                                onclick="handleSavePreference('${surgeon.id}', '${type}', '${fieldMap[type]}')"
+                                style="font-size: 14px; padding: 8px 16px;"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ` : `
+                <div>
+                    ${hasValue ? `
+                        <p style="color: var(--slate); line-height: 1.6; margin-bottom: 12px; white-space: pre-wrap;">${value}</p>
+                        <button
+                            class="btn btn-secondary"
+                            onclick="handleEditPreference('${type}')"
+                            style="font-size: 13px; padding: 6px 12px;"
+                        >
+                            ✏️ Edit
+                        </button>
+                    ` : `
+                        <button
+                            class="btn btn-primary"
+                            onclick="handleEditPreference('${type}')"
+                            style="font-size: 13px; padding: 6px 12px; background: var(--gold); border-color: var(--gold);"
+                        >
+                            + Add ${titleMap[type]}
+                        </button>
+                    `}
+                </div>
+            `}
+        </div>
+    `;
+}
+
+// Helper function for relative timestamps
+function getRelativeTime(timestamp) {
+    if (!timestamp) return 'Never';
+
+    const now = new Date();
+    const updated = new Date(timestamp);
+    const diffMs = now - updated;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return updated.toLocaleDateString();
+}
+
+// Global functions for preference editing
+window.handleEditPreference = function(type) {
+    editingPreference = type;
+    renderSurgeonDetailPage(currentSurgeonId, currentMode);
+
+    // Focus textarea and update char count after render
+    setTimeout(() => {
+        const textarea = document.getElementById(`pref-textarea-${type}`);
+        const charCount = document.getElementById(`char-count-${type}`);
+
+        if (textarea) {
+            textarea.focus();
+            if (charCount) {
+                charCount.textContent = textarea.value.length;
+            }
+
+            // Update char count on input
+            textarea.addEventListener('input', function() {
+                if (charCount) {
+                    charCount.textContent = this.value.length;
+                }
+            });
+        }
+    }, 0);
+};
+
+window.handleCancelPreference = function(type) {
+    editingPreference = null;
+    renderSurgeonDetailPage(currentSurgeonId, currentMode);
+};
+
+window.handleSavePreference = async function(surgeonId, type, fieldName) {
+    const textarea = document.getElementById(`pref-textarea-${type}`);
+    const saveBtn = document.getElementById(`save-btn-${type}`);
+
+    if (!textarea) return;
+
+    const value = textarea.value.trim();
+
+    try {
+        // Disable button and show loading state
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+        }
+
+        // Update preference
+        await updateSurgeonPreferences(surgeonId, {
+            [fieldName]: value || null
+        });
+
+        showNotification('Preference saved successfully!', 'success');
+        editingPreference = null;
+
+        // Reload the page to show updated data
+        await renderSurgeonDetailPage(surgeonId, currentMode);
+
+    } catch (error) {
+        handleError(error, 'handleSavePreference');
+        showNotification('Failed to save preference: ' + error.message, 'error');
+
+        // Re-enable button
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save';
+        }
+    }
+};
