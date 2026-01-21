@@ -4,16 +4,18 @@
  */
 
 // Supabase configuration - loaded from environment variables
+// Supports both Vite (VITE_*) and Vercel/Next.js (NEXT_PUBLIC_*) naming conventions
 export const SUPABASE_CONFIG = {
-    url: import.meta.env?.VITE_SUPABASE_URL || process.env?.VITE_SUPABASE_URL || '',
-    anonKey: import.meta.env?.VITE_SUPABASE_ANON_KEY || process.env?.VITE_SUPABASE_ANON_KEY || ''
+    url: import.meta.env.VITE_SUPABASE_URL || import.meta.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 };
 
 // Validate configuration
 export function validateConfig() {
     if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) {
         console.error('❌ Missing Supabase configuration!');
-        console.error('Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env.local file');
+        console.error('Checked for: VITE_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_URL');
+        console.error('Checked for: VITE_SUPABASE_ANON_KEY, NEXT_PUBLIC_SUPABASE_ANON_KEY');
         return false;
     }
     return true;

@@ -111,10 +111,15 @@ function showConfigError(message) {
                 <p style="color: #666; margin-bottom: 24px; line-height: 1.6;">${message}</p>
 
                 <div style="background: #f9f9f9; border-left: 4px solid #c33; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                    <div style="font-weight: 600; margin-bottom: 12px; color: #333;">Required Environment Variables:</div>
+                    <div style="font-weight: 600; margin-bottom: 12px; color: #333;">Required Environment Variables (use either naming convention):</div>
                     <code style="display: block; background: #fff; padding: 12px; border-radius: 4px; font-size: 13px; line-height: 1.8;">
+                        <strong>Option 1 (Vite):</strong><br>
                         VITE_SUPABASE_URL=https://your-project-id.supabase.co<br>
-                        VITE_SUPABASE_ANON_KEY=your-anon-key-here
+                        VITE_SUPABASE_ANON_KEY=your-anon-key-here<br>
+                        <br>
+                        <strong>Option 2 (Vercel/Next.js):</strong><br>
+                        NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co<br>
+                        NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
                     </code>
                 </div>
 
@@ -122,7 +127,7 @@ function showConfigError(message) {
                     <div style="font-weight: 600; margin-bottom: 8px; color: #0066cc;">For Local Development:</div>
                     <ol style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
                         <li>Create a <code>.env.local</code> file in the project root</li>
-                        <li>Add your Supabase credentials</li>
+                        <li>Add your Supabase credentials using <code>VITE_*</code> prefix</li>
                         <li>Restart the dev server</li>
                     </ol>
                 </div>
@@ -131,7 +136,7 @@ function showConfigError(message) {
                     <div style="font-weight: 600; margin-bottom: 8px; color: #0891b2;">For Vercel Deployment:</div>
                     <ol style="margin: 0; padding-left: 20px; color: #666; line-height: 1.8;">
                         <li>Go to Project Settings → Environment Variables</li>
-                        <li>Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY</li>
+                        <li>Add variables using either <code>VITE_*</code> or <code>NEXT_PUBLIC_*</code> prefix</li>
                         <li>Redeploy your application</li>
                     </ol>
                 </div>
