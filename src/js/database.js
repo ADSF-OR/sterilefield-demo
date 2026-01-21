@@ -226,7 +226,7 @@ export async function createCase(caseData) {
             hospital_id: caseData.hospital_id,
             surgeon_id: caseData.surgeon_id,
             notes: caseData.notes || null,
-            status: caseData.status || 'scheduled'
+            status: caseData.status || 'PENDING'
         }])
         .select(`
             *,
@@ -262,6 +262,26 @@ export async function deleteCase(id) {
         .eq('id', id);
 
     if (error) throw error;
+}
+
+export async function confirmCase(id, confirmedBy = 'Rep') {
+    const { data, error} = await supabase
+        .from('cases')
+        .update({
+            status: 'CONFIRMED',
+            confirmed_at: new Date().toISOString(),
+            confirmed_by: confirmedBy
+        })
+        .eq('id', id)
+        .select(`
+            *,
+            hospital:hospitals(id, name),
+            surgeon:surgeons(id, name)
+        `)
+        .single();
+
+    if (error) throw error;
+    return data;
 }
 
 // =====================================================
@@ -301,7 +321,7 @@ export async function getUpcomingCases(days = 7) {
 export async function getDashboardStats() {
     try {
         const [allCases, upcomingCases] = await Promise.all([
-            getCases({ status: 'scheduled' }),
+            getCases({ status: 'CONFIRMED' }),
             getUpcomingCases(7)
         ]);
 

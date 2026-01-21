@@ -7,9 +7,11 @@ import { navigateTo } from '../js/router.js';
 import { formatDate, formatTime, handleError, showNotification } from '../utils/helpers.js';
 
 let currentCaseId = null;
+let currentMode = 'rep'; // Default to rep mode
 
-export async function renderCaseDetailPage(caseId) {
+export async function renderCaseDetailPage(caseId, mode = 'rep') {
     currentCaseId = caseId;
+    currentMode = mode;
 
     const container = document.getElementById('caseDetailPage');
     if (!container) return;
@@ -26,8 +28,10 @@ export async function renderCaseDetailPage(caseId) {
     try {
         const caseData = await getCase(caseId);
 
-        const statusBadge = caseData.status === 'completed' ? 'green' :
-                           caseData.status === 'canceled' ? 'danger' : 'gray';
+        const statusBadge = caseData.status === 'COMPLETED' ? 'green' :
+                           caseData.status === 'CANCELLED' ? 'danger' :
+                           caseData.status === 'PENDING' ? 'warning' :
+                           caseData.status === 'CONFIRMED' ? 'success' : 'gray';
 
         container.innerHTML = `
             <div class="content">
@@ -52,9 +56,20 @@ export async function renderCaseDetailPage(caseId) {
                     <div style="display: grid; gap: 16px; font-size: 16px;">
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <span style="font-size: 24px;">👨‍⚕️</span>
-                            <div>
+                            <div style="flex: 1;">
                                 <div style="font-size: 12px; color: var(--gray-light); margin-bottom: 2px;">Surgeon</div>
-                                <div style="font-weight: 600; color: var(--slate);">${caseData.surgeon ? caseData.surgeon.name : 'Unknown'}</div>
+                                ${caseData.surgeon ? `
+                                    <div
+                                        style="font-weight: 600; color: var(--forest); cursor: pointer; text-decoration: underline;"
+                                        onclick="window.navigateTo('/${mode}/surgeons/${caseData.surgeon_id}')"
+                                        onmouseover="this.style.color='var(--gold)'"
+                                        onmouseout="this.style.color='var(--forest)'"
+                                    >
+                                        ${caseData.surgeon.name} →
+                                    </div>
+                                ` : `
+                                    <div style="font-weight: 600; color: var(--gray);">Unknown</div>
+                                `}
                             </div>
                         </div>
 
@@ -80,6 +95,16 @@ export async function renderCaseDetailPage(caseId) {
                                 <div style="color: var(--slate); line-height: 1.6;">${caseData.notes}</div>
                             </div>
                         ` : ''}
+
+                        ${caseData.status === 'CONFIRMED' && caseData.confirmed_by && caseData.confirmed_at ? `
+                            <div style="background: rgba(16, 185, 129, 0.08); border-left: 4px solid #10b981; padding: 16px; border-radius: 8px; margin-top: 12px;">
+                                <div style="font-size: 12px; font-weight: 700; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">✓ Confirmation Details</div>
+                                <div style="color: var(--slate); line-height: 1.6;">
+                                    <div>Confirmed by: <strong>${caseData.confirmed_by}</strong></div>
+                                    <div>Confirmed on: <strong>${formatDate(caseData.confirmed_at)}</strong></div>
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             </div>
@@ -87,7 +112,7 @@ export async function renderCaseDetailPage(caseId) {
 
         // Add event listeners
         document.getElementById('editBtn')?.addEventListener('click', () => {
-            navigateTo(`/cases/${caseId}/edit`);
+            navigateTo(`/${mode}/cases/${caseId}/edit`);
         });
 
         document.getElementById('deleteBtn')?.addEventListener('click', handleDelete);
@@ -117,7 +142,7 @@ async function handleDelete() {
     try {
         await deleteCase(currentCaseId);
         showNotification('Case deleted successfully!', 'success');
-        navigateTo('/schedule');
+        navigateTo(`/${currentMode}/schedule`);
     } catch (error) {
         handleError(error, 'handleDelete');
         showNotification('Failed to delete case: ' + error.message, 'error');

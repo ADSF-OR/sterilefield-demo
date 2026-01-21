@@ -164,6 +164,17 @@ window.addEventListener('popstate', async () => {
 export function hideAllPages() {
     // Hide all main content sections
     const pages = [
+        'modeChooserPage',
+        'repHomePage',
+        'schedulerHomePage',
+        'homePage',
+        'schedulePage',
+        'caseFormPage',
+        'caseDetailPage',
+        'hospitalsPage',
+        'surgeonsPage',
+        'surgeonDetailPage',
+        // Legacy page IDs (may not exist)
         'welcome',
         'loginPage',
         'repSurgeonList',
@@ -172,9 +183,7 @@ export function hideAllPages() {
         'repMore',
         'schedulerSurgeonList',
         'schedulerSurgeonDetail',
-        'caseListPage',
-        'caseDetailPage',
-        'caseFormPage'
+        'caseListPage'
     ];
 
     pages.forEach(pageId => {

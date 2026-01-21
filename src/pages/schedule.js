@@ -2,17 +2,21 @@
  * Schedule List Page
  */
 
-import { getCases, getSurgeons, getHospitals } from '../js/database.js';
+import { getCases, getSurgeons, getHospitals, confirmCase } from '../js/database.js';
 import { navigateTo } from '../js/router.js';
-import { formatDate, formatTime, handleError } from '../utils/helpers.js';
+import { formatDate, formatTime, handleError, showNotification } from '../utils/helpers.js';
 
 let currentFilters = {
     surgeonId: null,
     hospitalId: null,
-    days: 7
+    days: 7,
+    status: 'all' // all, PENDING, CONFIRMED
 };
 
-export async function renderSchedulePage() {
+let currentMode = 'rep'; // Track current mode
+
+export async function renderSchedulePage(mode = 'rep') {
+    currentMode = mode;
     const container = document.getElementById('schedulePage');
     if (!container) {
         console.error('Schedule page container not found');
@@ -44,7 +48,7 @@ export async function renderSchedulePage() {
                         <h1 class="page-title">Schedule</h1>
                         <p class="page-subtitle">View and manage cases</p>
                     </div>
-                    <button class="btn btn-primary" onclick="window.navigateTo('/cases/new')">
+                    <button class="btn btn-primary" onclick="window.navigateTo('/${mode}/cases/new')">
                         ➕ New Case
                     </button>
                 </div>
@@ -59,6 +63,14 @@ export async function renderSchedulePage() {
                                 <option value="7">Next 7 Days</option>
                                 <option value="30">Next 30 Days</option>
                                 <option value="all">All Upcoming</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="statusFilter">
+                                <option value="all">All Statuses</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="CONFIRMED">Confirmed</option>
                             </select>
                         </div>
                         <div>
@@ -87,6 +99,7 @@ export async function renderSchedulePage() {
 
         // Add event listeners
         document.getElementById('daysFilter')?.addEventListener('change', handleFilterChange);
+        document.getElementById('statusFilter')?.addEventListener('change', handleFilterChange);
         document.getElementById('surgeonFilter')?.addEventListener('change', handleFilterChange);
         document.getElementById('hospitalFilter')?.addEventListener('change', handleFilterChange);
 
@@ -111,11 +124,13 @@ export async function renderSchedulePage() {
 
 async function handleFilterChange() {
     const daysValue = document.getElementById('daysFilter')?.value;
+    const statusValue = document.getElementById('statusFilter')?.value;
     const surgeonId = document.getElementById('surgeonFilter')?.value;
     const hospitalId = document.getElementById('hospitalFilter')?.value;
 
     currentFilters = {
         days: daysValue === 'all' ? null : parseInt(daysValue),
+        status: statusValue || 'all',
         surgeonId: surgeonId || null,
         hospitalId: hospitalId || null
     };
@@ -138,9 +153,13 @@ async function loadCases() {
 
         // Build filters
         const filters = {
-            status: 'scheduled',  // Only show scheduled cases
             dateFrom: new Date().toISOString()
         };
+
+        // Only filter by status if not "all"
+        if (currentFilters.status && currentFilters.status !== 'all') {
+            filters.status = currentFilters.status;
+        }
 
         if (currentFilters.days) {
             const futureDate = new Date();
@@ -157,7 +176,12 @@ async function loadCases() {
         }
 
         // Fetch cases
-        const cases = await getCases(filters);
+        let cases = await getCases(filters);
+
+        // If no status filter, only show PENDING and CONFIRMED (not COMPLETED or CANCELLED)
+        if (!currentFilters.status || currentFilters.status === 'all') {
+            cases = cases.filter(c => c.status === 'PENDING' || c.status === 'CONFIRMED');
+        }
 
         if (cases.length === 0) {
             listContainer.innerHTML = renderEmptyState();
@@ -233,9 +257,14 @@ function getDateLabel(dateStr) {
 }
 
 function renderCaseCard(caseData) {
+    const isPending = caseData.status === 'PENDING';
+    const isConfirmed = caseData.status === 'CONFIRMED';
+    const statusBadge = isPending ? 'badge-warning' : isConfirmed ? 'badge-success' : 'badge-gray';
+    const statusLabel = isPending ? 'Pending' : isConfirmed ? 'Confirmed' : caseData.status;
+
     return `
-        <div class="case-card" style="cursor: pointer; margin-bottom: 14px;" onclick="window.navigateTo('/cases/${caseData.id}')">
-            <div style="display: flex; justify-content: between; align-items: start; gap: 16px; margin-bottom: 8px;">
+        <div class="case-card" style="cursor: pointer; margin-bottom: 14px;" onclick="window.navigateTo('/${currentMode}/cases/${caseData.id}')">
+            <div style="display: flex; justify-content: space-between; align-items: start; gap: 16px; margin-bottom: 8px;">
                 <div style="flex: 1;">
                     <div style="font-weight: 700; font-size: 20px; color: var(--forest); margin-bottom: 6px;">
                         ${caseData.procedure}
@@ -251,8 +280,17 @@ function renderCaseCard(caseData) {
                         </div>
                     ` : ''}
                 </div>
-                <div>
-                    <span class="badge badge-gray">Scheduled</span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span class="badge ${statusBadge}">${statusLabel}</span>
+                    ${isPending && currentMode === 'rep' ? `
+                        <button
+                            class="btn btn-primary"
+                            style="font-size: 13px; padding: 6px 14px; white-space: nowrap;"
+                            onclick="event.stopPropagation(); handleConfirmCase('${caseData.id}')"
+                        >
+                            ✓ Confirm
+                        </button>
+                    ` : ''}
                 </div>
             </div>
         </div>
@@ -269,12 +307,24 @@ function renderEmptyState() {
             <div style="font-size: 14px; color: var(--gray-light); margin-bottom: 20px;">
                 Try adjusting your filters or schedule a new case
             </div>
-            <button class="btn btn-primary" onclick="window.navigateTo('/cases/new')">
+            <button class="btn btn-primary" onclick="window.navigateTo('/${currentMode}/cases/new')">
                 Schedule New Case
             </button>
         </div>
     `;
 }
+
+// Global function for confirming cases
+window.handleConfirmCase = async function(caseId) {
+    try {
+        await confirmCase(caseId, 'Rep');
+        showNotification('Case confirmed successfully!', 'success');
+        await loadCases(); // Reload cases to show updated status
+    } catch (error) {
+        handleError(error, 'handleConfirmCase');
+        showNotification('Failed to confirm case: ' + error.message, 'error');
+    }
+};
 
 // Export for use in other modules
 window.handleScheduleFilterChange = handleFilterChange;
