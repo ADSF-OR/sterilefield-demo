@@ -8,25 +8,22 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <!-- Top Navigation -->
+    <!-- Top Navigation (dynamically updated by app.js) -->
     <nav style="background: var(--forest); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <div style="font-family: Georgia, serif; font-size: 24px; font-weight: bold;">SterileField</div>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <button class="nav-link" onclick="window.navigateTo('/')">🏠 Home</button>
-            <button class="nav-link" onclick="window.navigateTo('/cases/new')">➕ New Case</button>
-            <button class="nav-link" onclick="window.navigateTo('/schedule')">📋 Schedule</button>
-            <button class="nav-link" onclick="window.navigateTo('/hospitals')">🏥 Hospitals</button>
-            <button class="nav-link" onclick="window.navigateTo('/surgeons')">👨‍⚕️ Surgeons</button>
-        </div>
+        <!-- Navigation will be dynamically populated based on mode -->
     </nav>
 
     <!-- Page Containers -->
+    <div id="modeChooserPage" class="hidden"></div>
+    <div id="repHomePage" class="hidden"></div>
+    <div id="schedulerHomePage" class="hidden"></div>
     <div id="homePage" class="hidden"></div>
     <div id="schedulePage" class="hidden"></div>
     <div id="caseFormPage" class="hidden"></div>
     <div id="caseDetailPage" class="hidden"></div>
     <div id="hospitalsPage" class="hidden"></div>
     <div id="surgeonsPage" class="hidden"></div>
+    <div id="surgeonDetailPage" class="hidden"></div>
 
     <!-- Notification Container -->
     <div id="notificationContainer" style="position: fixed; top: 80px; right: 20px; z-index: 10000;"></div>

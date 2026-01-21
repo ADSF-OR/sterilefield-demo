@@ -7,9 +7,11 @@ import { navigateTo } from '../js/router.js';
 import { formatDate, formatTime, handleError, showNotification } from '../utils/helpers.js';
 
 let currentCaseId = null;
+let currentMode = 'rep'; // Default to rep mode
 
-export async function renderCaseDetailPage(caseId) {
+export async function renderCaseDetailPage(caseId, mode = 'rep') {
     currentCaseId = caseId;
+    currentMode = mode;
 
     const container = document.getElementById('caseDetailPage');
     if (!container) return;
@@ -52,9 +54,20 @@ export async function renderCaseDetailPage(caseId) {
                     <div style="display: grid; gap: 16px; font-size: 16px;">
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <span style="font-size: 24px;">👨‍⚕️</span>
-                            <div>
+                            <div style="flex: 1;">
                                 <div style="font-size: 12px; color: var(--gray-light); margin-bottom: 2px;">Surgeon</div>
-                                <div style="font-weight: 600; color: var(--slate);">${caseData.surgeon ? caseData.surgeon.name : 'Unknown'}</div>
+                                ${caseData.surgeon ? `
+                                    <div
+                                        style="font-weight: 600; color: var(--forest); cursor: pointer; text-decoration: underline;"
+                                        onclick="window.navigateTo('/${mode}/surgeons/${caseData.surgeon_id}')"
+                                        onmouseover="this.style.color='var(--gold)'"
+                                        onmouseout="this.style.color='var(--forest)'"
+                                    >
+                                        ${caseData.surgeon.name} →
+                                    </div>
+                                ` : `
+                                    <div style="font-weight: 600; color: var(--gray);">Unknown</div>
+                                `}
                             </div>
                         </div>
 
@@ -87,7 +100,7 @@ export async function renderCaseDetailPage(caseId) {
 
         // Add event listeners
         document.getElementById('editBtn')?.addEventListener('click', () => {
-            navigateTo(`/cases/${caseId}/edit`);
+            navigateTo(`/${mode}/cases/${caseId}/edit`);
         });
 
         document.getElementById('deleteBtn')?.addEventListener('click', handleDelete);
@@ -117,7 +130,7 @@ async function handleDelete() {
     try {
         await deleteCase(currentCaseId);
         showNotification('Case deleted successfully!', 'success');
-        navigateTo('/schedule');
+        navigateTo(`/${currentMode}/schedule`);
     } catch (error) {
         handleError(error, 'handleDelete');
         showNotification('Failed to delete case: ' + error.message, 'error');

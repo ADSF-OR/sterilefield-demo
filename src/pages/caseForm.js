@@ -7,12 +7,20 @@ import { navigateTo } from '../js/router.js';
 import { handleError, showNotification } from '../utils/helpers.js';
 
 let currentCaseId = null;
+let currentMode = 'rep';
 let surgeons = [];
 let hospitals = [];
 
-export async function renderCaseFormPage(caseId = null) {
+export async function renderCaseFormPage(caseId = null, mode = 'rep') {
     currentCaseId = caseId;
+    currentMode = mode;
     const isEdit = !!caseId;
+
+    // Check for prefilled surgeon from schedule flow
+    const prefillSurgeonId = sessionStorage.getItem('prefillSurgeonId');
+    if (prefillSurgeonId && !isEdit) {
+        sessionStorage.removeItem('prefillSurgeonId'); // Clear after reading
+    }
 
     const container = document.getElementById('caseFormPage');
     if (!container) {
@@ -73,7 +81,7 @@ export async function renderCaseFormPage(caseId = null) {
                                 <select class="form-select" id="surgeonSelect" required style="flex: 1;">
                                     <option value="">Select surgeon...</option>
                                     ${surgeons.map(s => `
-                                        <option value="${s.id}" ${caseData?.surgeon_id === s.id ? 'selected' : ''}>
+                                        <option value="${s.id}" ${(caseData?.surgeon_id === s.id || prefillSurgeonId === s.id) ? 'selected' : ''}>
                                             ${s.name}
                                         </option>
                                     `).join('')}
@@ -249,7 +257,7 @@ async function handleSubmit(e) {
             showNotification('Case updated successfully!', 'success');
 
             // Navigate to case detail
-            navigateTo(`/cases/${currentCaseId}`);
+            navigateTo(`/${currentMode}/cases/${currentCaseId}`);
         } else {
             // Create new case
             const caseData = {
@@ -265,7 +273,7 @@ async function handleSubmit(e) {
             showNotification('Case created successfully!', 'success');
 
             // Navigate to new case detail
-            navigateTo(`/cases/${newCase.id}`);
+            navigateTo(`/${currentMode}/cases/${newCase.id}`);
         }
     } catch (error) {
         handleError(error, 'handleSubmit');
