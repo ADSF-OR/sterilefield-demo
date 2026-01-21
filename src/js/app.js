@@ -1,12 +1,14 @@
 /**
  * SterileField MVP Application
- * Simple case tracking without authentication
+ * Case tracking with simple authentication
  */
 
 import { initSupabase } from './database.js';
-import { defineRoute, navigateTo, showPage, hideAllPages } from './router.js';
+import { defineRoute, navigateTo, showPage, hideAllPages, setAuthCheck } from './router.js';
+import { isAuthenticated, getCurrentUser, logout as authLogout } from '../utils/auth.js';
 
 // Import pages
+import { renderLoginPage } from '../pages/login.js';
 import { renderModeChooserPage } from '../pages/modeChooser.js';
 import { renderRepHomePage } from '../pages/repHome.js';
 import { renderSchedulerHomePage } from '../pages/schedulerHome.js';
@@ -28,25 +30,35 @@ export async function initApp() {
         // Initialize Supabase
         initSupabase();
 
+        // Set up authentication check
+        setAuthCheck(() => {
+            return isAuthenticated();
+        });
+
         // Define all routes
         defineRoutes();
 
         console.log('✅ Application initialized successfully');
 
+        // Check if user is authenticated
+        if (!isAuthenticated()) {
+            console.log('🔒 User not authenticated, redirecting to login');
+            await navigateTo('/login', true);
+            return;
+        }
+
         // Navigate to initial route
         const path = window.location.pathname;
+        const user = getCurrentUser();
 
-        // Check for saved mode preference
-        const savedMode = localStorage.getItem('appMode');
-
-        if (path === '/' || path === '') {
-            // If we have a saved mode, redirect to that mode's home
-            if (savedMode === 'rep') {
+        if (path === '/' || path === '' || path === '/login') {
+            // Redirect to user's role-specific dashboard
+            if (user.role === 'rep') {
                 await navigateTo('/rep', true);
-            } else if (savedMode === 'scheduler') {
+            } else if (user.role === 'scheduler') {
                 await navigateTo('/scheduler', true);
             } else {
-                // Show mode chooser
+                // Fallback
                 await navigateTo('/', true);
             }
         } else {
@@ -63,6 +75,16 @@ export async function initApp() {
 // =====================================================
 
 function defineRoutes() {
+    // =====================================================
+    // LOGIN
+    // =====================================================
+    defineRoute('/login', async () => {
+        hideAllPages();
+        hideNavigation();
+        showPage('loginPage');
+        await renderLoginPage();
+    }, { requiresAuth: false });
+
     // =====================================================
     // MODE CHOOSER
     // =====================================================
@@ -83,7 +105,7 @@ function defineRoutes() {
         showNavigation('rep');
         showPage('repHomePage');
         await renderRepHomePage();
-    }, { requiresAuth: false });
+    });
 
     // Rep Schedule
     defineRoute('/rep/schedule', async () => {
@@ -91,7 +113,7 @@ function defineRoutes() {
         showNavigation('rep');
         showPage('schedulePage');
         await renderSchedulePage('rep');
-    }, { requiresAuth: false });
+    });
 
     // Rep Hospitals
     defineRoute('/rep/hospitals', async () => {
@@ -99,7 +121,7 @@ function defineRoutes() {
         showNavigation('rep');
         showPage('hospitalsPage');
         await renderHospitalsPage();
-    }, { requiresAuth: false });
+    });
 
     // Rep Surgeons
     defineRoute('/rep/surgeons', async () => {
@@ -107,7 +129,7 @@ function defineRoutes() {
         showNavigation('rep');
         showPage('surgeonsPage');
         await renderSurgeonsPage();
-    }, { requiresAuth: false });
+    });
 
     // Rep Surgeon Detail
     defineRoute('/rep/surgeons/:id', async (params) => {
@@ -115,7 +137,7 @@ function defineRoutes() {
         showNavigation('rep');
         showPage('surgeonDetailPage');
         await renderSurgeonDetailPage(params.id, 'rep');
-    }, { requiresAuth: false });
+    });
 
     // Rep New Case
     defineRoute('/rep/cases/new', async () => {
@@ -123,7 +145,7 @@ function defineRoutes() {
         showNavigation('rep');
         showPage('caseFormPage');
         await renderCaseFormPage(null, 'rep');
-    }, { requiresAuth: false });
+    });
 
     // Rep Case Detail
     defineRoute('/rep/cases/:id', async (params) => {
@@ -131,7 +153,7 @@ function defineRoutes() {
         showNavigation('rep');
         showPage('caseDetailPage');
         await renderCaseDetailPage(params.id, 'rep');
-    }, { requiresAuth: false });
+    });
 
     // Rep Edit Case
     defineRoute('/rep/cases/:id/edit', async (params) => {
@@ -139,7 +161,7 @@ function defineRoutes() {
         showNavigation('rep');
         showPage('caseFormPage');
         await renderCaseFormPage(params.id, 'rep');
-    }, { requiresAuth: false });
+    });
 
     // =====================================================
     // SCHEDULER VIEW ROUTES
@@ -151,7 +173,7 @@ function defineRoutes() {
         showNavigation('scheduler');
         showPage('schedulerHomePage');
         await renderSchedulerHomePage();
-    }, { requiresAuth: false });
+    });
 
     // Scheduler Hospitals
     defineRoute('/scheduler/hospitals', async () => {
@@ -159,7 +181,7 @@ function defineRoutes() {
         showNavigation('scheduler');
         showPage('hospitalsPage');
         await renderHospitalsPage();
-    }, { requiresAuth: false });
+    });
 
     // Scheduler Surgeons
     defineRoute('/scheduler/surgeons', async () => {
@@ -167,7 +189,7 @@ function defineRoutes() {
         showNavigation('scheduler');
         showPage('surgeonsPage');
         await renderSurgeonsPage();
-    }, { requiresAuth: false });
+    });
 
     // Scheduler Surgeon Detail
     defineRoute('/scheduler/surgeons/:id', async (params) => {
@@ -175,7 +197,7 @@ function defineRoutes() {
         showNavigation('scheduler');
         showPage('surgeonDetailPage');
         await renderSurgeonDetailPage(params.id, 'scheduler');
-    }, { requiresAuth: false });
+    });
 
     // Scheduler New Case
     defineRoute('/scheduler/cases/new', async () => {
@@ -183,7 +205,7 @@ function defineRoutes() {
         showNavigation('scheduler');
         showPage('caseFormPage');
         await renderCaseFormPage(null, 'scheduler');
-    }, { requiresAuth: false });
+    });
 
     // Scheduler Case Detail
     defineRoute('/scheduler/cases/:id', async (params) => {
@@ -191,7 +213,7 @@ function defineRoutes() {
         showNavigation('scheduler');
         showPage('caseDetailPage');
         await renderCaseDetailPage(params.id, 'scheduler');
-    }, { requiresAuth: false });
+    });
 
     // Scheduler Edit Case
     defineRoute('/scheduler/cases/:id/edit', async (params) => {
@@ -199,7 +221,7 @@ function defineRoutes() {
         showNavigation('scheduler');
         showPage('caseFormPage');
         await renderCaseFormPage(params.id, 'scheduler');
-    }, { requiresAuth: false });
+    });
 }
 
 // =====================================================
@@ -226,6 +248,8 @@ function updateNavigationForMode(mode) {
     // Update mode indicator and navigation
     const modeLabel = mode === 'rep' ? 'Rep View' : 'Scheduler View';
     const modeColor = mode === 'rep' ? '#3b82f6' : '#f59e0b';
+    const user = getCurrentUser();
+    const displayName = user ? user.displayName : 'User';
 
     // Create navigation HTML based on mode
     if (mode === 'rep') {
@@ -235,12 +259,13 @@ function updateNavigationForMode(mode) {
                     <div style="font-family: Georgia, serif; font-size: 24px; font-weight: bold;">SterileField</div>
                     <span style="background: ${modeColor}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">${modeLabel}</span>
                 </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                     <button class="nav-link" onclick="window.navigateTo('/rep')">🏠 Home</button>
                     <button class="nav-link" onclick="window.navigateTo('/rep/schedule')">📋 Schedule</button>
                     <button class="nav-link" onclick="window.navigateTo('/rep/hospitals')">🏥 Hospitals</button>
                     <button class="nav-link" onclick="window.navigateTo('/rep/surgeons')">👨‍⚕️ Surgeons</button>
-                    <button class="nav-link" onclick="switchMode()" style="background: rgba(255,255,255,0.2);">🔄 Switch Mode</button>
+                    <span style="color: rgba(255,255,255,0.8); font-size: 13px; padding: 0 8px;">${displayName}</span>
+                    <button class="nav-link" onclick="handleLogout()" style="background: rgba(220, 38, 38, 0.2); border-color: rgba(220, 38, 38, 0.3);">🚪 Logout</button>
                 </div>
             </div>
         `;
@@ -251,11 +276,12 @@ function updateNavigationForMode(mode) {
                     <div style="font-family: Georgia, serif; font-size: 24px; font-weight: bold;">SterileField</div>
                     <span style="background: ${modeColor}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">${modeLabel}</span>
                 </div>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                     <button class="nav-link" onclick="window.navigateTo('/scheduler')">🏠 Home</button>
                     <button class="nav-link" onclick="window.navigateTo('/scheduler/hospitals')">🏥 Hospitals</button>
                     <button class="nav-link" onclick="window.navigateTo('/scheduler/surgeons')">👨‍⚕️ Surgeons</button>
-                    <button class="nav-link" onclick="switchMode()" style="background: rgba(255,255,255,0.2);">🔄 Switch Mode</button>
+                    <span style="color: rgba(255,255,255,0.8); font-size: 13px; padding: 0 8px;">${displayName}</span>
+                    <button class="nav-link" onclick="handleLogout()" style="background: rgba(220, 38, 38, 0.2); border-color: rgba(220, 38, 38, 0.3);">🚪 Logout</button>
                 </div>
             </div>
         `;
@@ -266,6 +292,13 @@ function updateNavigationForMode(mode) {
 window.switchMode = function() {
     localStorage.removeItem('appMode');
     window.navigateTo('/');
+};
+
+window.handleLogout = function() {
+    if (confirm('Are you sure you want to logout?')) {
+        authLogout();
+        window.navigateTo('/login');
+    }
 };
 
 // =====================================================

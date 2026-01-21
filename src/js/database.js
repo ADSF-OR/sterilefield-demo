@@ -138,10 +138,30 @@ export async function createSurgeon(name) {
     return data;
 }
 
-export async function updateSurgeon(id, name) {
+export async function updateSurgeon(id, updates) {
+    // Support both old format (just name) and new format (object with multiple fields)
+    const updateData = typeof updates === 'string'
+        ? { name: updates.trim() }
+        : updates;
+
     const { data, error } = await supabase
         .from('surgeons')
-        .update({ name: name.trim() })
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function updateSurgeonPreferences(id, preferences) {
+    const { data, error } = await supabase
+        .from('surgeons')
+        .update({
+            ...preferences,
+            preferences_last_updated: new Date().toISOString()
+        })
         .eq('id', id)
         .select()
         .single();
