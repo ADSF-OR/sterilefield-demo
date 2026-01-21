@@ -90,7 +90,7 @@ function defineRoutes() {
         hideAllPages();
         showNavigation('rep');
         showPage('schedulePage');
-        await renderSchedulePage();
+        await renderSchedulePage('rep');
     }, { requiresAuth: false });
 
     // Rep Hospitals

@@ -163,7 +163,8 @@ export async function renderCaseFormPage(caseId = null, mode = 'rep') {
                             <div class="form-group">
                                 <label class="form-label">Status</label>
                                 <select class="form-select" id="statusSelect">
-                                    <option value="scheduled" ${caseData?.status === 'scheduled' ? 'selected' : ''}>Scheduled</option>
+                                    <option value="pending" ${caseData?.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="confirmed" ${caseData?.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
                                     <option value="completed" ${caseData?.status === 'completed' ? 'selected' : ''}>Completed</option>
                                     <option value="canceled" ${caseData?.status === 'canceled' ? 'selected' : ''}>Canceled</option>
                                 </select>
@@ -266,7 +267,7 @@ async function handleSubmit(e) {
                 procedure: procedure,
                 case_datetime: caseDateTime,
                 notes: notes || null,
-                status: 'scheduled'
+                status: 'pending'
             };
 
             const newCase = await createCase(caseData);

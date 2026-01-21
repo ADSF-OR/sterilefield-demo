@@ -28,12 +28,21 @@ export async function renderSchedulerHomePage() {
             getCases()
         ]);
 
-        // Count upcoming cases per surgeon
+        // Count upcoming cases per surgeon (pending and confirmed)
         const now = new Date();
         const caseCounts = {};
+        const pendingCounts = {};
+        const confirmedCounts = {};
+
         cases.forEach(c => {
-            if (c.surgeon_id && new Date(c.case_datetime) >= now && c.status === 'scheduled') {
-                caseCounts[c.surgeon_id] = (caseCounts[c.surgeon_id] || 0) + 1;
+            if (c.surgeon_id && new Date(c.case_datetime) >= now) {
+                if (c.status === 'pending') {
+                    caseCounts[c.surgeon_id] = (caseCounts[c.surgeon_id] || 0) + 1;
+                    pendingCounts[c.surgeon_id] = (pendingCounts[c.surgeon_id] || 0) + 1;
+                } else if (c.status === 'confirmed') {
+                    caseCounts[c.surgeon_id] = (caseCounts[c.surgeon_id] || 0) + 1;
+                    confirmedCounts[c.surgeon_id] = (confirmedCounts[c.surgeon_id] || 0) + 1;
+                }
             }
         });
 
@@ -65,6 +74,8 @@ export async function renderSchedulerHomePage() {
                         <div style="display: grid; gap: 12px;">
                             ${surgeons.map(s => {
                                 const upcomingCount = caseCounts[s.id] || 0;
+                                const pending = pendingCounts[s.id] || 0;
+                                const confirmed = confirmedCounts[s.id] || 0;
                                 return `
                                     <div
                                         class="surgeon-item"
@@ -80,8 +91,10 @@ export async function renderSchedulerHomePage() {
                                                     <div style="font-weight: 700; color: var(--forest); font-size: 18px; margin-bottom: 4px;">
                                                         ${s.name}
                                                     </div>
-                                                    <div style="color: var(--gray); font-size: 14px;">
-                                                        ${upcomingCount} upcoming ${upcomingCount === 1 ? 'case' : 'cases'}
+                                                    <div style="font-size: 14px; display: flex; gap: 12px; flex-wrap: wrap;">
+                                                        ${pending > 0 ? `<span style="color: #f59e0b; font-weight: 600;">⏳ ${pending} pending</span>` : ''}
+                                                        ${confirmed > 0 ? `<span style="color: #10b981; font-weight: 600;">✅ ${confirmed} confirmed</span>` : ''}
+                                                        ${upcomingCount === 0 ? `<span style="color: var(--gray);">No upcoming cases</span>` : ''}
                                                     </div>
                                                 </div>
                                             </div>
@@ -103,18 +116,24 @@ export async function renderSchedulerHomePage() {
                 </div>
 
                 <!-- Quick Stats -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 24px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-top: 24px;">
                     <div style="background: white; border: 2px solid var(--forest-light); border-radius: 12px; padding: 20px; text-align: center;">
                         <div style="font-size: 32px; font-weight: 700; color: var(--forest); margin-bottom: 4px;">
                             ${surgeons.length}
                         </div>
                         <div style="color: var(--gray); font-size: 14px;">Total Surgeons</div>
                     </div>
-                    <div style="background: white; border: 2px solid var(--gold); border-radius: 12px; padding: 20px; text-align: center;">
-                        <div style="font-size: 32px; font-weight: 700; color: var(--gold); margin-bottom: 4px;">
-                            ${Object.values(caseCounts).reduce((a, b) => a + b, 0)}
+                    <div style="background: white; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700; color: #f59e0b; margin-bottom: 4px;">
+                            ${Object.values(pendingCounts).reduce((a, b) => a + b, 0)}
                         </div>
-                        <div style="color: var(--gray); font-size: 14px;">Upcoming Cases</div>
+                        <div style="color: var(--gray); font-size: 14px;">⏳ Pending</div>
+                    </div>
+                    <div style="background: white; border: 2px solid #10b981; border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700; color: #10b981; margin-bottom: 4px;">
+                            ${Object.values(confirmedCounts).reduce((a, b) => a + b, 0)}
+                        </div>
+                        <div style="color: var(--gray); font-size: 14px;">✅ Confirmed</div>
                     </div>
                 </div>
             </div>

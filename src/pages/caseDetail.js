@@ -29,7 +29,9 @@ export async function renderCaseDetailPage(caseId, mode = 'rep') {
         const caseData = await getCase(caseId);
 
         const statusBadge = caseData.status === 'completed' ? 'green' :
-                           caseData.status === 'canceled' ? 'danger' : 'gray';
+                           caseData.status === 'canceled' ? 'danger' :
+                           caseData.status === 'pending' ? 'warning' :
+                           caseData.status === 'confirmed' ? 'success' : 'gray';
 
         container.innerHTML = `
             <div class="content">
@@ -91,6 +93,16 @@ export async function renderCaseDetailPage(caseId, mode = 'rep') {
                             <div style="background: rgba(184, 134, 11, 0.08); border-left: 4px solid var(--gold); padding: 16px; border-radius: 8px; margin-top: 12px;">
                                 <div style="font-size: 12px; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Notes</div>
                                 <div style="color: var(--slate); line-height: 1.6;">${caseData.notes}</div>
+                            </div>
+                        ` : ''}
+
+                        ${caseData.status === 'confirmed' && caseData.confirmed_by && caseData.confirmed_at ? `
+                            <div style="background: rgba(16, 185, 129, 0.08); border-left: 4px solid #10b981; padding: 16px; border-radius: 8px; margin-top: 12px;">
+                                <div style="font-size: 12px; font-weight: 700; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">✓ Confirmation Details</div>
+                                <div style="color: var(--slate); line-height: 1.6;">
+                                    <div>Confirmed by: <strong>${caseData.confirmed_by}</strong></div>
+                                    <div>Confirmed on: <strong>${formatDate(caseData.confirmed_at)}</strong></div>
+                                </div>
                             </div>
                         ` : ''}
                     </div>
