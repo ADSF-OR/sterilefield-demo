@@ -363,3 +363,50 @@ export async function getDashboardStats() {
         };
     }
 }
+
+// =====================================================
+// ANESTHESIA MODULE - CASES WITH COVERAGE
+// =====================================================
+
+export async function getAnesthesiaCases(filters = {}) {
+    let query = supabase
+        .from('anesthesia_cases')
+        .select('*');
+
+    if (filters.date) {
+        query = query.eq('date', filters.date);
+    }
+
+    if (filters.status) {
+        query = query.eq('case_status', filters.status);
+    }
+
+    query = query.order('scheduled_start_at');
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+}
+
+export async function updateAnesthesiaCase(id, updates) {
+    const { data, error } = await supabase
+        .from('anesthesia_cases')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function createAnesthesiaCase(caseData) {
+    const { data, error } = await supabase
+        .from('anesthesia_cases')
+        .insert([caseData])
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
