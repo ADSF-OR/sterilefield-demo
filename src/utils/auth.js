@@ -16,6 +16,20 @@ const CREDENTIALS = {
         password: 'scheduler123',
         role: 'scheduler',
         displayName: 'Scheduler User'
+    },
+    coordinator: {
+        username: 'coordinator',
+        password: 'coordinator123',
+        role: 'anesthesia',
+        displayName: 'Anesthesia Coordinator',
+        anesthesiaRole: 'coordinator'
+    },
+    coverage: {
+        username: 'coverage',
+        password: 'coverage123',
+        role: 'anesthesia',
+        displayName: 'Anesthesia Coverage',
+        anesthesiaRole: 'coverage'
     }
 };
 

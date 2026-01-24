@@ -21,23 +21,23 @@ export function renderModeChooserPage() {
                 </div>
 
                 <!-- Mode Selection Cards -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
                     <!-- Rep View Card -->
                     <button
                         id="repModeBtn"
                         class="mode-card"
-                        style="background: white; border: 3px solid transparent; border-radius: 16px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"
+                        style="background: white; border: 3px solid transparent; border-radius: 16px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"
                         onmouseover="this.style.borderColor='var(--gold)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.2)';"
                         onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.15)';"
                     >
-                        <div style="font-size: 64px; margin-bottom: 16px;">👨‍💼</div>
-                        <h2 style="font-size: 28px; color: var(--forest); margin-bottom: 12px; font-weight: 700;">
+                        <div style="font-size: 56px; margin-bottom: 12px;">👨‍💼</div>
+                        <h2 style="font-size: 24px; color: var(--forest); margin-bottom: 10px; font-weight: 700;">
                             Rep View
                         </h2>
-                        <p style="color: var(--slate); line-height: 1.6; margin-bottom: 20px;">
+                        <p style="color: var(--slate); line-height: 1.6; margin-bottom: 16px; font-size: 14px;">
                             Track your assigned cases, view surgeon preferences, and manage your territory hospitals.
                         </p>
-                        <div style="display: flex; flex-direction: column; gap: 8px; text-align: left; color: var(--gray); font-size: 14px;">
+                        <div style="display: flex; flex-direction: column; gap: 6px; text-align: left; color: var(--gray); font-size: 13px;">
                             <div>✓ View assigned cases</div>
                             <div>✓ Surgeon directory & preferences</div>
                             <div>✓ Hospital territory management</div>
@@ -48,21 +48,43 @@ export function renderModeChooserPage() {
                     <button
                         id="schedulerModeBtn"
                         class="mode-card"
-                        style="background: white; border: 3px solid transparent; border-radius: 16px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"
+                        style="background: white; border: 3px solid transparent; border-radius: 16px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"
                         onmouseover="this.style.borderColor='var(--gold)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.2)';"
                         onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.15)';"
                     >
-                        <div style="font-size: 64px; margin-bottom: 16px;">📋</div>
-                        <h2 style="font-size: 28px; color: var(--forest); margin-bottom: 12px; font-weight: 700;">
+                        <div style="font-size: 56px; margin-bottom: 12px;">📋</div>
+                        <h2 style="font-size: 24px; color: var(--forest); margin-bottom: 10px; font-weight: 700;">
                             Scheduler View
                         </h2>
-                        <p style="color: var(--slate); line-height: 1.6; margin-bottom: 20px;">
+                        <p style="color: var(--slate); line-height: 1.6; margin-bottom: 16px; font-size: 14px;">
                             Schedule surgical cases, manage surgeon availability, and coordinate hospital logistics.
                         </p>
-                        <div style="display: flex; flex-direction: column; gap: 8px; text-align: left; color: var(--gray); font-size: 14px;">
+                        <div style="display: flex; flex-direction: column; gap: 6px; text-align: left; color: var(--gray); font-size: 13px;">
                             <div>✓ Schedule cases for surgeons</div>
                             <div>✓ Manage surgeon roster</div>
                             <div>✓ Coordinate hospital resources</div>
+                        </div>
+                    </button>
+
+                    <!-- Anesthesia View Card -->
+                    <button
+                        id="anesthesiaModeBtn"
+                        class="mode-card"
+                        style="background: white; border: 3px solid transparent; border-radius: 16px; padding: 32px; text-align: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"
+                        onmouseover="this.style.borderColor='var(--gold)'; this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.2)';"
+                        onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.15)';"
+                    >
+                        <div style="font-size: 56px; margin-bottom: 12px;">💉</div>
+                        <h2 style="font-size: 24px; color: var(--forest); margin-bottom: 10px; font-weight: 700;">
+                            Anesthesia
+                        </h2>
+                        <p style="color: var(--slate); line-height: 1.6; margin-bottom: 16px; font-size: 14px;">
+                            Coordinate coverage assignments, track live case status, and manage break schedules.
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 6px; text-align: left; color: var(--gray); font-size: 13px;">
+                            <div>✓ Coverage coordination</div>
+                            <div>✓ Live case tracking</div>
+                            <div>✓ Break status management</div>
                         </div>
                     </button>
                 </div>
@@ -84,5 +106,10 @@ export function renderModeChooserPage() {
     document.getElementById('schedulerModeBtn')?.addEventListener('click', () => {
         localStorage.setItem('appMode', 'scheduler');
         window.location.href = '/scheduler';
+    });
+
+    document.getElementById('anesthesiaModeBtn')?.addEventListener('click', () => {
+        localStorage.setItem('appMode', 'anesthesia');
+        window.location.href = '/anesthesia';
     });
 }

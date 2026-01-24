@@ -19,6 +19,9 @@ import { renderHospitalsPage } from '../pages/hospitals.js';
 import { renderSurgeonsPage } from '../pages/surgeons.js';
 import { renderSurgeonDetailPage } from '../pages/surgeonDetail.js';
 
+// Import anesthesia pages
+import { renderAnesthesiaMain } from '../pages/anesthesia/anesthesiaMain.js';
+
 // =====================================================
 // INITIALIZATION
 // =====================================================
@@ -57,6 +60,8 @@ export async function initApp() {
                 await navigateTo('/rep', true);
             } else if (user.role === 'scheduler') {
                 await navigateTo('/scheduler', true);
+            } else if (user.role === 'anesthesia') {
+                await navigateTo('/anesthesia', true);
             } else {
                 // Fallback
                 await navigateTo('/', true);
@@ -222,6 +227,32 @@ function defineRoutes() {
         showPage('caseFormPage');
         await renderCaseFormPage(params.id, 'scheduler');
     });
+
+    // =====================================================
+    // ANESTHESIA MODULE ROUTES
+    // =====================================================
+
+    // Anesthesia Main (Coordinator & Coverage Views)
+    defineRoute('/anesthesia', async () => {
+        hideAllPages();
+        showNavigation('anesthesia');
+        showPage('anesthesiaPage');
+        await renderAnesthesiaMain();
+    });
+
+    defineRoute('/anesthesia/coordinator', async () => {
+        hideAllPages();
+        showNavigation('anesthesia');
+        showPage('anesthesiaPage');
+        await renderAnesthesiaMain();
+    });
+
+    defineRoute('/anesthesia/coverage', async () => {
+        hideAllPages();
+        showNavigation('anesthesia');
+        showPage('anesthesiaPage');
+        await renderAnesthesiaMain();
+    });
 }
 
 // =====================================================
@@ -246,13 +277,27 @@ function updateNavigationForMode(mode) {
     if (!nav) return;
 
     // Update mode indicator and navigation
-    const modeLabel = mode === 'rep' ? 'Rep View' : 'Scheduler View';
-    const modeColor = mode === 'rep' ? '#3b82f6' : '#f59e0b';
+    const modeLabel = mode === 'anesthesia' ? 'Anesthesia' : (mode === 'rep' ? 'Rep View' : 'Scheduler View');
+    const modeColor = mode === 'anesthesia' ? '#1b4332' : (mode === 'rep' ? '#3b82f6' : '#f59e0b');
     const user = getCurrentUser();
     const displayName = user ? user.displayName : 'User';
 
     // Create navigation HTML based on mode
-    if (mode === 'rep') {
+    if (mode === 'anesthesia') {
+        nav.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="font-family: Georgia, serif; font-size: 24px; font-weight: bold;">SterileField</div>
+                    <span style="background: ${modeColor}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">${modeLabel}</span>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <button class="nav-link" onclick="window.navigateTo('/anesthesia')">📊 Schedule</button>
+                    <span style="color: rgba(255,255,255,0.8); font-size: 13px; padding: 0 8px;">${displayName}</span>
+                    <button class="nav-link" onclick="handleLogout()" style="background: rgba(220, 38, 38, 0.2); border-color: rgba(220, 38, 38, 0.3);">🚪 Logout</button>
+                </div>
+            </div>
+        `;
+    } else if (mode === 'rep') {
         nav.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 16px;">
