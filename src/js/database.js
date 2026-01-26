@@ -3,22 +3,22 @@
  * Handles all Supabase database operations
  */
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client
 let supabase = null;
 
 export function initSupabase() {
-    const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env?.VITE_SUPABASE_ANON_KEY;
+    const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || import.meta.env?.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || import.meta.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     // Check for missing environment variables
     if (!supabaseUrl || !supabaseKey) {
         console.error('❌ Missing Supabase configuration!');
         console.error('Required environment variables:');
-        console.error('  - VITE_SUPABASE_URL');
-        console.error('  - VITE_SUPABASE_ANON_KEY');
-        throw new Error('Missing Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment variables.');
+        console.error('  - VITE_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL');
+        console.error('  - VITE_SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY');
+        throw new Error('Missing Supabase configuration. Please set environment variables with VITE_ or NEXT_PUBLIC_ prefix.');
     }
 
     // Check for placeholder values
