@@ -79,7 +79,7 @@ export function renderModeChooserPage() {
                             Anesthesia
                         </h2>
                         <p style="color: var(--slate); line-height: 1.6; margin-bottom: 16px; font-size: 14px;">
-                            Coordinate coverage assignments, track live case status, and manage break schedules.
+                            Coordinate anesthesia coverage, track live OR status, and manage staff breaks.
                         </p>
                         <div style="display: flex; flex-direction: column; gap: 6px; text-align: left; color: var(--gray); font-size: 13px;">
                             <div>✓ Coverage coordination</div>
